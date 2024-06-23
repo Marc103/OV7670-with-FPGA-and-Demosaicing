@@ -33,6 +33,25 @@ MCLK <-> XCLK
 
 ![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/4ac5698e-d715-47d3-96b5-2fc17806dd0b)
 
+![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/8b75e934-baf7-4f6b-873a-75348a83a904)
+
+![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/167f923c-efac-49e7-bbf0-8b207896f98c)
+
+- Since we are dealing with a two wire setup, we can ignore SCCB_E.
+![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/92f1db44-960b-4891-a891-02fa9ddd623f)
+
+- SIO_D must be held at 1 for a defined period to avoid unknown bus state propagation. Minimum value of t_rpc is 15 ns, t_psc is
+  also 15 ns. This happens before transmission, and after transmission.
+
+![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/69c84b7d-8a66-4966-9519-9c58f90043e5)
+
+![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/bdb92781-57f9-4069-b529-72a159547480)
+
+
+
+
+
+
 
 
 
