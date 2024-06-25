@@ -40,7 +40,8 @@ module OV7670_CAMERA_DRIVER
 
             end
             else
-            
+        end
+
 
 
 
