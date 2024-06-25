@@ -9,16 +9,39 @@ MCLK <-> XCLK
 */
 
 module OV7670_CAMERA_DRIVER
-    (output XCLK,
+    (input clk,
+     input reset_,
+     output XCLK,
      output RESET#,
      output PWDN,
      output SIO_C,
-     output SIO_D,
+     inout SIO_D,
+     input rx_d,
+     output tx_d,
      input STROBE,
      input HREF,
      input PCLK,
      input VSYNC,
      input [7:0] D
      );
+
+    // OE is active on LOW
+    reg OE = 0;
+
+
+    // Tri-state buffer
+    // active LOW
+    assign SIO_D = OE ? 1'bZ : TX_D;
+    assign RX_D = SIO_D;
+
+    always@(posedge CLK)
+        begin
+            if(~reset_) begin
+
+            end
+            else
+            
+
+
 
 endmodule
