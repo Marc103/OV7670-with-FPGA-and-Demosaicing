@@ -79,7 +79,11 @@ MCLK <-> XCLK
 ### VGA Setup (with artix-7 fpga on basys 3 board)
 ![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/8a3e00df-627d-44c2-8323-e18105eac120)
 
-
+### 4 7-seg displays
+- same as a one 7-seg display, but the cathodes are multiplexed
+- ![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/25665acf-fba6-425f-8521-230926c063b3)
+- see timing diagram
+![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/8a92e2b0-89eb-4043-bf47-5b00ad05ecf3)
 
 ### Setup and Short-circuit protections
 ![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/ecb6e25e-f8c2-4d43-8c2d-a99ed023e0bb)
