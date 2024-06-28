@@ -76,6 +76,11 @@ MCLK <-> XCLK
 
 ![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/d80e8d2d-3bc6-4307-8479-8623e7d33fd5)
 
+### VGA Setup (with artix-7 fpga on basys 3 board)
+![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/8a3e00df-627d-44c2-8323-e18105eac120)
+
+
+
 ### Setup and Short-circuit protections
 ![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/ecb6e25e-f8c2-4d43-8c2d-a99ed023e0bb)
 ![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/68b2e85f-1504-4c47-8db6-bf54b2de4afa)
