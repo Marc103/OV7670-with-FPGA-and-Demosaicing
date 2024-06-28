@@ -12,115 +12,80 @@ so that more time can be focused on the debayering logic. But, its good to use a
 a way to familiarize better with System verilog.
 
 To be repurposed to usher commands to the i2c pre-made module. 
+
+Final form, the camera driver usher commands to the i2c module, which then communicates to the
+SCCB interface. The other i/o from the camera is still connected to this module. 
+
+This module's job is to take in configuration inputs via HCI and set those configurations by
+controlling i2c module. The basys3 board has 5 buttons and 16 switches. The simplest HCI would
+be set some value via the switches, press a button to set a particular parameter. (we should definitely
+debounced the buttons).
+
+Okay, it turns out there is a ridiculous number of device control registers.
+- Use the seven seg display to show the currently chosen register address (1 byte -> 2 hex values -> 2 7 seg displays)
+- left/right buttons decrement/increment the address by 1
+- down/up buttons decrement/increment the address by 16
+- 8 switches (1 byte) to set the value
+- center button sends command
+
 */
 
 module OV7670_CAMERA_DRIVER
     (input  logic clk,
      input  logic  reset_,
-     output logic XCLK,
+
+     /*
+      * HCI 
+      */
+     input  logic       dbncd_l_btn,
+     input  logic       dbncd_r_btn,
+     input  logic       dbncd_u_btn,
+     input  logic       dbncd_d_btn,
+     input  logic       dbncd_c_btn,
+     input  logic [7:0] switches,
+     // todo add seven seg
      
+     /*
+      * i2c master interface
+      */
+     output logic [6:0]  s_axis_cmd_address,
+     output logic        s_axis_cmd_start,
+     output logic        s_axis_cmd_read,
+     output logic        s_axis_cmd_write,
+     output logic        s_axis_cmd_write_multiple,
+     output logic        s_axis_cmd_stop,
+     output logic        s_axis_cmd_valid,
+     input  logic        s_axis_cmd_ready,
+
+     output logic [7:0]  s_axis_data_tdata,
+     output logic        s_axis_data_tvalid,
+     input  logic        s_axis_data_tready,
+     output logic        s_axis_data_tlast,
+
+     input  logic [7:0]  m_axis_data_tdata,
+     input  logic        m_axis_data_tvalid,
+     output logic        m_axis_data_tready,
+     input  logic        m_axis_data_tlast,
+
+     /*
+      * Camera interface (except SIO_C and SIO_D since i2c_master takes care of that)
+      */
+     output logic XCLK,
+
+     // video timing generator signals
+     input  logic STROBE,
+     input  logic HREF,
+     input  logic PCLK,
+     input  logic VSYNC,
      output logic RESET#,
      output logic PWDN,
-     
-     output logic SIO_C,
-     inout  logic SIO_D,
 
-     input  logic rx_d,
-     output logic tx_d,
-     input  logic [7:0] tx_byte,
-     output logic [7:0] rx_byte,
-
-     
-     input logic STROBE,
-     input logic HREF,
-     input logic PCLK,
-     input logic VSYNC,
      input logic [7:0] D
      );
 
-    // OE is active on LOW
-    reg OE = 0;
+    
 
-    phase_states_t phase_state = IDLE;
-    transmission_states_t transmission_state = IDLE;
-    reg [3:0] bit_index = 7;
-
-    always@(*)
-        begin
-            // Default values
-            OE = 1'b1;
-            tx_d = 1'b0;
-
-            case(phase_state):
-                IDLE:
-                    begin
-
-                    end
-                PHASE_1:
-                    begin
-
-                    end
-                PHASE_2_SA:
-                    begin
-
-                    end
-                PHASE_2_RD:
-                    begin
-
-                    end
-                PHASE_3_WD:
-                    begin
-
-                    end
-            
-                default:
-                    begin
-                    end
-            endcase
-
-            case(transmission_state):
-                IDLE:
-                    begin
-                    end
-                START:
-                    begin
-                    end
-                DATA:
-                    begin
-                    end
-                RW_:
-                    begin
-                    end
-                X:
-                    begin
-                    end
-                STOP:
-                    begin
-                    end
-                
-                default:
-                    begin
-                    end
-            endcase
-                
-
-
-        end
-
-
-
-    // Tri-state buffer
-    // active LOW
-    assign SIO_D = OE ? 1'bZ : TX_D;
-    assign RX_D = SIO_D;
-
-    always@(posedge CLK)
-        begin
-            if(~reset_) begin
-
-            end
-            else
-        end
+    
 
 
 
