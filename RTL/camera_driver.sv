@@ -6,30 +6,36 @@ SDA  <-> SIO_D
 HS   <-> HREF
 VS   <-> VREF
 MCLK <-> XCLK
+
+This file will most likely be abandonded in favor of a pre-made i2c block
+so that more time can be focused on the debayering logic. But, its good to use as
+a way to familiarize better with System verilog.
+
+To be repurposed to usher commands to the i2c pre-made module. 
 */
 
 module OV7670_CAMERA_DRIVER
-    (input  clk,
-     input  reset_,
-     output XCLK,
+    (input  logic clk,
+     input  logic  reset_,
+     output logic XCLK,
      
-     output RESET#,
-     output PWDN,
+     output logic RESET#,
+     output logic PWDN,
      
-     output SIO_C,
-     inout  SIO_D,
+     output logic SIO_C,
+     inout  logic SIO_D,
 
-     input  rx_d,
-     output tx_d,
-     input  [7:0] tx_byte,
-     output [7:0] rx_byte,
+     input  logic rx_d,
+     output logic tx_d,
+     input  logic [7:0] tx_byte,
+     output logic [7:0] rx_byte,
 
      
-     input STROBE,
-     input HREF,
-     input PCLK,
-     input VSYNC,
-     input [7:0] D
+     input logic STROBE,
+     input logic HREF,
+     input logic PCLK,
+     input logic VSYNC,
+     input logic [7:0] D
      );
 
     // OE is active on LOW
