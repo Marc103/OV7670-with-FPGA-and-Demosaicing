@@ -2,7 +2,7 @@
  * Multiplex the 4 by 7 seg displays
  */
 
- module 4_7_SEGMENT_DRIVER
+ module SEGMENT_DRIVER_4_7
     (
         input  logic clk, // assumed to be 100 MHz, paramaterize later (todo)
         input  logic [15:0] binary_num,
@@ -20,4 +20,4 @@
         output logic DP, // default to 0.
     );
 
-end module
+endmodule
