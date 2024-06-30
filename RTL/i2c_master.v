@@ -64,6 +64,8 @@ module i2c_master (
     input  wire        sda_i,
     output wire        sda_o,
     output wire        sda_t,
+    inout  wire        scl_pin,
+    inout  wire        sda_pin,
 
     /*
      * Status
