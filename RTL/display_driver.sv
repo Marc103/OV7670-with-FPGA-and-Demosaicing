@@ -1,9 +1,12 @@
 /*
  * Multiplex the 4 by 7 seg displays
  * Cycles per Display (CPD)
- * 0.25 ms minimum digit period
- * for a 100Mhz clock, that equates to 25000
- * from basys 3 reference manual : "o illuminate a segment, the anode should 
+ * refresh period = 1 ms to 16 ms
+ * digit period = refresh / 4
+ * taking refresh period = 1 ms
+ * 0.25 ms digit period
+ * for a 100Mhz clock, that equates to 25000 cycles
+ * from basys 3 reference manual : "to illuminate a segment, the anode should 
  * be driven high while the cathode is driven low. However, since 
  * the Basys 3 uses transistors to drive enough current into the 
  * common anode point, the anode enables are inverted. Therefore, 
@@ -43,7 +46,7 @@
 
     logic multiplexed_binary [3:0];
 
-    Binary_To_Segment bt7 (.i_Binary_Num(multiplexed_binary),
+    Binary_To_Segment Bt7 (.i_Binary_Num(multiplexed_binary),
                            .o_Segment_A(CA),
                            .o_Segment_B(CB),
                            .o_Segment_C(CC),

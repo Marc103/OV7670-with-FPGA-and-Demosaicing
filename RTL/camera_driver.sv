@@ -28,6 +28,8 @@ Okay, it turns out there is a ridiculous number of device control registers.
 - 8 switches (1 byte) to set the value
 - center button sends command
 
+Probably should add a way to read and display a value stored at a register.
+
 */
 
 module OV7670_CAMERA_DRIVER
@@ -43,8 +45,9 @@ module OV7670_CAMERA_DRIVER
      input  logic       dbncd_d_btn,
      input  logic       dbncd_c_btn,
      input  logic [7:0] switches,
+     output logic [7:0] binary_num,
      // todo add seven seg
-     
+
      /*
       * i2c master interface
       */
