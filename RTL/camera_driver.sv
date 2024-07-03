@@ -80,7 +80,7 @@ module OV7670_CAMERA_DRIVER
      input  logic HREF,
      input  logic PCLK,
      input  logic VSYNC,
-     output logic RESET#,
+     output logic RESET_,
      output logic PWDN,
 
      input logic [7:0] D
@@ -127,7 +127,7 @@ module OV7670_CAMERA_DRIVER
             if(state_u_btn == 1'b1 && dbncd_u_btn == 1'b0)
                 begin
                     // Up button pressed, +16
-                    state_binary_num <= state_binary_num + 16
+                    state_binary_num <= state_binary_num + 16;
                     state_u_btn = 1'b0;
                 end
             else
@@ -138,7 +138,7 @@ module OV7670_CAMERA_DRIVER
             if(state_d_btn == 1'b1 && dbncd_d_btn == 1'b0)
                 begin
                     // Down button pressed, -16
-                    state_binary_num <= state_binary_num - 16
+                    state_binary_num <= state_binary_num - 16;
                     state_d_btn = 1'b0;
                 end
             else

@@ -30,10 +30,10 @@
         output logic CE,
         output logic CF,
         output logic CG,
-        output logic DP, // default to 0.
+        output logic DP // default to 0.
     );
 
-    logic counter [$clog2(CPD):0] = 0;
+    logic [$clog2(CPD):0] counter = 0;
 
     parameter s_AN3 = 2'b00;
     parameter s_AN2 = 2'b01;
@@ -41,10 +41,10 @@
     parameter s_AN0 = 2'b11;
 
 
-    logic state      [1:0] = s_AN3; 
-    logic next_state [1:0] = s_AN3;
+    logic [1:0] state       = s_AN3; 
+    logic [1:0] next_state  = s_AN3;
 
-    logic multiplexed_binary [3:0];
+    logic [3:0] multiplexed_binary;
 
     Binary_To_Segment Bt7 (.i_Binary_Num(multiplexed_binary),
                            .o_Segment_A(CA),
@@ -98,19 +98,19 @@
                     case(state)
                         s_AN3:
                             begin
-                                next_state <= S_AN2;
+                                next_state <= s_AN2;
                             end
                         s_AN2:
                             begin
-                                next_state <= S_AN1;
+                                next_state <= s_AN1;
                             end
                         s_AN1:
                             begin
-                                next_state <= S_AN0;
+                                next_state <= s_AN0;
                             end
                         s_AN0:
                             begin
-                                next_state <= S_AN3;
+                                next_state <= s_AN3;
                             end
                     endcase
                 end

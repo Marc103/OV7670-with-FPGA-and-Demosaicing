@@ -41,7 +41,7 @@ module TOP
      input  logic HREF_PIN,
      input  logic PCLK_PIN,
      input  logic VSYNC_PIN,
-     output logic RESET#_PIN,
+     output logic RESET_PIN,
      output logic PWDN_PIN,
 
      input  logic [7:0] D_PIN,
