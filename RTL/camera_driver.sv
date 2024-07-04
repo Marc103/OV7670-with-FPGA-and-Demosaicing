@@ -94,15 +94,14 @@ module OV7670_CAMERA_DRIVER
     logic state_d_btn;
     logic state_c_btn;
 
-    logic [7:0] state_binary_num = 8'b00000000;
+    logic [7:0] state_binary_num = 8'h23;
 
     assign binary_num = state_binary_num;
 
 
     always@(posedge clk)
         begin
-
-            if(state_l_btn == 1'b1 && dbncd_l_btn == 1'b0)
+            if((state_l_btn == 1'b1) && (dbncd_l_btn == 1'b0))
                 begin
                     // Left button pressed, -1
                     state_binary_num <= state_binary_num - 1;
@@ -110,50 +109,50 @@ module OV7670_CAMERA_DRIVER
                 end
             else
                 begin
-                    state_l_btn = dbncd_l_btn;
+                    state_l_btn <= dbncd_l_btn;
                 end
             
-            if(state_r_btn == 1'b1 && dbncd_r_btn == 1'b0)
+            if((state_r_btn == 1'b1) && (dbncd_r_btn == 1'b0))
                 begin
                     // Right button pressed, +1
                     state_binary_num <= state_binary_num + 1;
-                    state_r_btn = 1'b0;
+                    state_r_btn <= 1'b0;
                 end
             else
                 begin
-                    state_r_btn = dbncd_r_btn;
+                    state_r_btn <= dbncd_r_btn;
                 end
 
-            if(state_u_btn == 1'b1 && dbncd_u_btn == 1'b0)
+            if((state_u_btn == 1'b1) && (dbncd_u_btn == 1'b0))
                 begin
                     // Up button pressed, +16
                     state_binary_num <= state_binary_num + 16;
-                    state_u_btn = 1'b0;
+                    state_u_btn <= 1'b0;
                 end
             else
                 begin
-                    state_u_btn = dbncd_u_btn;
+                    state_u_btn <= dbncd_u_btn;
                 end
 
-            if(state_d_btn == 1'b1 && dbncd_d_btn == 1'b0)
+            if((state_d_btn == 1'b1) && (dbncd_d_btn == 1'b0))
                 begin
                     // Down button pressed, -16
                     state_binary_num <= state_binary_num - 16;
-                    state_d_btn = 1'b0;
+                    state_d_btn <= 1'b0;
                 end
             else
                 begin
-                    state_d_btn = dbncd_d_btn;
+                    state_d_btn <= dbncd_d_btn;
                 end
             
-            if(state_c_btn == 1'b1 && dbncd_c_btn == 1'b0)
+            if((state_c_btn == 1'b1 && dbncd_c_btn == 1'b0))
                 begin
                     // Center button pressed, send command
-                    state_c_btn = 1'b0;
+                    state_c_btn <= 1'b0;
                 end
             else
                 begin
-                    state_c_btn = dbncd_l_btn;
+                    state_c_btn <= dbncd_l_btn;
                 end
 
         end

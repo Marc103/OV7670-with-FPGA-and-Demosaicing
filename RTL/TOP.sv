@@ -5,6 +5,8 @@
  *
  */
 
+`timescale 1ns / 1ps 
+
 module TOP
     (input clk,
      input logic reset_,
@@ -34,15 +36,15 @@ module TOP
      /*
       * Camera interface (except SIO_C and SIO_D since i2c_master takes care of that)
       */
-     output logic XCLK,
+     //output logic XCLK,
 
      // video timing generator signals
      input  logic STROBE_PIN,
      input  logic HREF_PIN,
      input  logic PCLK_PIN,
      input  logic VSYNC_PIN,
-     output logic RESET_PIN,
-     output logic PWDN_PIN,
+     //output logic RESET_PIN,
+     //output logic PWDN_PIN,
 
      input  logic [7:0] D_PIN,
 
@@ -52,6 +54,19 @@ module TOP
      inout logic scl_PIN,
      inout logic sda_PIN
     );
+    
+    //logic clk = 0;
+    //initial 
+    //    begin
+    //        clk = 0; 
+    //        forever 
+    //            begin
+    //            #10 clk = ~clk;
+    //            end 
+    //     end
+    
+    
+    
 
     logic w_dbncd_l_btn;
     logic w_dbncd_r_btn;
@@ -77,7 +92,7 @@ module TOP
                           .i_Switch(d_btn_PIN),
                           .o_Switch(w_dbncd_d_btn));
 
-    Debounce_Switch D_btn(.i_Clk(clk),
+    Debounce_Switch C_btn(.i_Clk(clk),
                           .i_Switch(d_btn_PIN),
                           .o_Switch(w_dbncd_c_btn));
                         
@@ -126,6 +141,9 @@ module TOP
                              .CF(CF_PIN),
                              .CG(CG_PIN),
                              .DP(DP_PIN));
+                             
+    
+    initial $display("%b", Sd4_7.counter);
 
     
 endmodule

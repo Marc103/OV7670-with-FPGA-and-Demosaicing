@@ -54,12 +54,12 @@ module Binary_To_7Segment
     end 
  
   // r_Hex_Encoding[7] is unused
-  assign o_Segment_A = r_Hex_Encoding[6];
-  assign o_Segment_B = r_Hex_Encoding[5];
-  assign o_Segment_C = r_Hex_Encoding[4];
-  assign o_Segment_D = r_Hex_Encoding[3];
-  assign o_Segment_E = r_Hex_Encoding[2];
-  assign o_Segment_F = r_Hex_Encoding[1];
-  assign o_Segment_G = r_Hex_Encoding[0];
+  assign o_Segment_A = ~r_Hex_Encoding[6];
+  assign o_Segment_B = ~r_Hex_Encoding[5];
+  assign o_Segment_C = ~r_Hex_Encoding[4];
+  assign o_Segment_D = ~r_Hex_Encoding[3];
+  assign o_Segment_E = ~r_Hex_Encoding[2];
+  assign o_Segment_F = ~r_Hex_Encoding[1];
+  assign o_Segment_G = ~r_Hex_Encoding[0];
  
 endmodule // Binary_To_7Segment

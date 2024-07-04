@@ -46,7 +46,7 @@
 
     logic [3:0] multiplexed_binary;
 
-    Binary_To_Segment Bt7 (.i_Binary_Num(multiplexed_binary),
+    Binary_To_7Segment Bt7 (.i_Binary_Num(multiplexed_binary),
                            .o_Segment_A(CA),
                            .o_Segment_B(CB),
                            .o_Segment_C(CC),
@@ -118,6 +118,8 @@
                 begin
                     counter <= counter + 1;
                 end
+            state <= next_state;
+
         end
 
 

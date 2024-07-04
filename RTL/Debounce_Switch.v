@@ -9,7 +9,7 @@ module Debounce_Switch (input i_Clk, input i_Switch, output o_Switch);
  
   parameter c_DEBOUNCE_LIMIT = 1000000;  // 10 ms at 100 MHz
    
-  reg [17:0] r_Count = 0;
+  reg [$clog2(c_DEBOUNCE_LIMIT):0] r_Count = 0;
   reg r_State = 1'b0;
  
   always @(posedge i_Clk)
