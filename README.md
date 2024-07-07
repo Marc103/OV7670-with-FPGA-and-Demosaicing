@@ -79,6 +79,15 @@ MCLK <-> XCLK
 ### VGA Setup (with artix-7 fpga on basys 3 board)
 ![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/8a3e00df-627d-44c2-8323-e18105eac120)
 
+### Understanding VGA Timing
+The timing diagrams are fairly straightforward, refer to the Basys 3 reference documents and the OV7670 datasheets.
+What I found confusing is how does the display itself know what resolution to expect?
+- If we have a smaller resolution then the display will there be blank lines?
+- Without knowledge of resolution, how does the display know to correctly sample data?
+- The only constants are horizontal/vertical sync and the refresh rate of the monitor, but the pixel clock is not passed...
+The GPIO test code provided by diligent is a good way to understanding how to interact with VGA displays:
+https://digilent.com/reference/programmable-logic/basys-3/demos/gpio
+
 ### 4 7-seg displays
 - same as a one 7-seg display, but the cathodes are multiplexed
 - ![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/25665acf-fba6-425f-8521-230926c063b3)
