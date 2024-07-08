@@ -88,6 +88,12 @@ What I found confusing is how does the display itself know what resolution to ex
 The GPIO test code provided by diligent is a good way to understanding how to interact with VGA displays:
 https://digilent.com/reference/programmable-logic/basys-3/demos/gpio
 
+After much reading out, two things are understood:
+1. The resolution is *inferred* by the monitor depending on how many hsyncs there are between vsyncs (okay, makes sense)
+2. The Generalized Timing Formula Standard by VESA, answers all questions about timing (see https://glenwing.github.io/docs/VESA-GTF-1.1.pdf)
+
+VESA controls these standards, in fact, they copy right them and sell them. Don't bother visiting their website, finding information is suprisingly difficult and obscure and will lead to requesting information (which you don't know is what you actually need until they approve, if they do anyway).
+
 ### 4 7-seg displays
 - same as a one 7-seg display, but the cathodes are multiplexed
 - ![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/25665acf-fba6-425f-8521-230926c063b3)
