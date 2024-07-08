@@ -76,6 +76,20 @@ MCLK <-> XCLK
 
 ![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/d80e8d2d-3bc6-4307-8479-8623e7d33fd5)
 
+### Pmod-Setup
+![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/e5c4ec1c-e176-4f77-b860-046d3c57eaa7)
+
+Mappings:
+JB1 - SCL    JB7  - SDA     (** Don't forget SCL and SDA resistors! see short-circuit protections below)
+JB2 - VS     JB8  - HS
+JB3 - PCLK   JB9  - MCLK
+JB4 - D7     JB10 - D6
+
+JC1 - D5     JC7  - D4
+JC2 - D3     JC8  - D2
+JC3 - D1     JC9  - D0
+JC4 - RST    JC10 - PWDN
+
 ### VGA Setup (with artix-7 fpga on basys 3 board)
 ![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/8a3e00df-627d-44c2-8323-e18105eac120)
 
