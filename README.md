@@ -79,7 +79,7 @@ MCLK <-> XCLK
 ### Pmod-Setup
 ![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/e5c4ec1c-e176-4f77-b860-046d3c57eaa7)
 
-Mappings:
+Mappings:  
 JB1 - SCL    JB7  - SDA     (** Don't forget SCL and SDA resistors! see short-circuit protections below)  
 JB2 - VS     JB8  - HS  
 JB3 - PCLK   JB9  - MCLK  
