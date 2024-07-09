@@ -151,57 +151,57 @@ set_property PACKAGE_PIN U17 [get_ports d_btn_PIN]
 
 ##Pmod Header JB
 ##Sch name = JB1
-#set_property PACKAGE_PIN A14 [get_ports {JB[0]}]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports {JB[0]}]
+set_property PACKAGE_PIN A14 [get_ports SCL_PIN]					
+	set_property IOSTANDARD LVCMOS33 [get_ports SCL_PIN]
 ##Sch name = JB2
-#set_property PACKAGE_PIN A16 [get_ports {JB[1]}]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports {JB[1]}]
+set_property PACKAGE_PIN A16 [get_ports VSYNC_PIN]					
+	set_property IOSTANDARD LVCMOS33 [get_ports VSYNC_PIN]
 ##Sch name = JB3
-#set_property PACKAGE_PIN B15 [get_ports {JB[2]}]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports {JB[2]}]
+set_property PACKAGE_PIN B15 [get_ports PCLK_PIN]					
+	set_property IOSTANDARD LVCMOS33 [get_ports PCKL_PIN]
 ##Sch name = JB4
-#set_property PACKAGE_PIN B16 [get_ports {JB[3]}]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports {JB[3]}]
+set_property PACKAGE_PIN B16 [get_ports {D_PIN[7]}]					
+	set_property IOSTANDARD LVCMOS33 [get_ports {D_PIN[7]}]
 ##Sch name = JB7
-#set_property PACKAGE_PIN A15 [get_ports {JB[4]}]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports {JB[4]}]
+set_property PACKAGE_PIN A15 [get_ports SDA_PIN]					
+	set_property IOSTANDARD LVCMOS33 [get_ports SDA_PIN]
 ##Sch name = JB8
-#set_property PACKAGE_PIN A17 [get_ports {JB[5]}]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports {JB[5]}]
+set_property PACKAGE_PIN A17 [get_ports HREF_PIN]					
+	set_property IOSTANDARD LVCMOS33 [get_ports HREF_PIN]
 ##Sch name = JB9
-#set_property PACKAGE_PIN C15 [get_ports {JB[6]}]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports {JB[6]}]
+set_property PACKAGE_PIN C15 [get_ports MCLK]					
+	set_property IOSTANDARD LVCMOS33 [get_ports MCLK]
 ##Sch name = JB10 
-#set_property PACKAGE_PIN C16 [get_ports {JB[7]}]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports {JB[7]}]
+set_property PACKAGE_PIN C16 [get_ports {D_PIN[6]}]					
+	set_property IOSTANDARD LVCMOS33 [get_ports {D_PIN[6]}]
  
 
 
 ##Pmod Header JC
 ##Sch name = JC1
-#set_property PACKAGE_PIN K17 [get_ports {JC[0]}]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports {JC[0]}]
+set_property PACKAGE_PIN K17 [get_ports {D_PIN[5]}]					
+	set_property IOSTANDARD LVCMOS33 [get_ports {D_PIN[5]}]
 ##Sch name = JC2
-#set_property PACKAGE_PIN M18 [get_ports {JC[1]}]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports {JC[1]}]
+set_property PACKAGE_PIN M18 [get_ports {D_PIN[3]}]					
+	set_property IOSTANDARD LVCMOS33 [get_ports {D_PIN[3]}]
 ##Sch name = JC3
-#set_property PACKAGE_PIN N17 [get_ports {JC[2]}]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports {JC[2]}]
+set_property PACKAGE_PIN N17 [get_ports {D_PIN[1]}]					
+	set_property IOSTANDARD LVCMOS33 [get_ports {D_PIN[1]}]
 ##Sch name = JC4
-#set_property PACKAGE_PIN P18 [get_ports {JC[3]}]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports {JC[3]}]
+set_property PACKAGE_PIN P18 [get_ports RST_PIN]					
+	set_property IOSTANDARD LVCMOS33 [get_ports RST_PIN]
 ##Sch name = JC7
-#set_property PACKAGE_PIN L17 [get_ports {JC[4]}]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports {JC[4]}]
+set_property PACKAGE_PIN L17 [get_ports {D[4]}]					
+	set_property IOSTANDARD LVCMOS33 [get_ports {D[4]}]
 ##Sch name = JC8
-#set_property PACKAGE_PIN M19 [get_ports {JC[5]}]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports {JC[5]}]
+set_property PACKAGE_PIN M19 [get_ports {D[2]}]					
+	set_property IOSTANDARD LVCMOS33 [get_ports {D[2]}]
 ##Sch name = JC9
-#set_property PACKAGE_PIN P17 [get_ports {JC[6]}]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports {JC[6]}]
+set_property PACKAGE_PIN P17 [get_ports {D[0]}]					
+	set_property IOSTANDARD LVCMOS33 [get_ports {D[0]}]
 ##Sch name = JC10
-#set_property PACKAGE_PIN R18 [get_ports {JC[7]}]					
-	#set_property IOSTANDARD LVCMOS33 [get_ports {JC[7]}]
+set_property PACKAGE_PIN R18 [get_ports PWDN_PIN]					
+	set_property IOSTANDARD LVCMOS33 [get_ports PWDN_PIN]
 
 
 #Pmod Header JXADC

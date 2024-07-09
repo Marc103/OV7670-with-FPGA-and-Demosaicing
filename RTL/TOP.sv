@@ -36,23 +36,23 @@ module TOP
      /*
       * Camera interface (except SIO_C and SIO_D since i2c_master takes care of that)
       */
-     //output logic XCLK,
+     output logic MCLK,
 
      // video timing generator signals
      input  logic STROBE_PIN,
      input  logic HREF_PIN,
      input  logic PCLK_PIN,
      input  logic VSYNC_PIN,
-     //output logic RESET_PIN,
-     //output logic PWDN_PIN,
+     output logic RST_PIN,
+     output logic PWDN_PIN,
 
      input  logic [7:0] D_PIN,
 
      /*
       * i2c wiring
       */
-     inout logic scl_PIN,
-     inout logic sda_PIN
+     inout logic SCL_PIN,
+     inout logic SDA_PIN
     );
     
     //logic clk = 0;
