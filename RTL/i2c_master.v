@@ -185,13 +185,14 @@ I/O pin.  This would prevent devices from stretching the clock period.
 */
 
 // as per the example
-// scl_pin should be set in the constraints as an inout? (or is this inferred)
+// scl_pin should be set in the constraints 
+// Also need to change this to active LOW instead
 assign scl_i = scl_pin;
 assign scl_pin = scl_t ? 1'bz : scl_o;
 assign sda_i = sda_pin;
 assign sda_pin = sda_t ? 1'bz : sda_o;
 
-// Also need to change this to active LOW instead
+
 
 localparam [4:0]
     STATE_IDLE = 4'd0,

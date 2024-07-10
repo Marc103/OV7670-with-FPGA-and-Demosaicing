@@ -49,25 +49,75 @@ module TOP
      input  logic [7:0] D_PIN,
 
      /*
+      * VGA Port Pins
+      */
+     output logic [3:0] VGA_R_PIN,
+     output logic [3:0] VGA_B_PIN,
+     output logic [3:0] VGA_G_PIN,
+     output logic VGA_HS_PIN,
+     output logic VGA_VS_PIN,
+
+     /*
       * i2c wiring
       */
      inout logic SCL_PIN,
-     inout logic SDA_PIN
+     inout logic SDA_PIN,
+     
+     /*
+      * Debug LEDS
+      */
+      output logic [15:0] LED
+      
     );
+    
+    assign PWDN_PIN = 1'b0;
+    assign RST_PIN = 1'b1;
+    assign LED[15] = VSYNC_PIN;
+    assign LED[14:0] = 0;
     
     //logic clk = 0;
     //initial 
     //    begin
     //        clk = 0; 
     //        forever 
-    //            begin
+    //           begin
     //            #10 clk = ~clk;
     //            end 
     //     end
     
-    
-    
+    /*
+     * Clock wiring, to produce 25 MHz clock and 400 KHz (max 400Khz for i2c)
+     * from 100 MHz
+     */
+     logic w_clk_100MHz_to_25MHz;
+     logic w_clk_100Mhz_to_400KHz;
 
+    // 100MHz/25MHz = 4, so we use 4/2 = 2
+    CLK_DIV #(.div_by_x2(2)) clk_x2_2 (.clk(clk), .o_clk(w_clk_100MHz_to_25MHz));
+    assign MCLK = w_clk_100MHz_to_25MHz;
+    // 100MHz/400Khz = 250, so we use 250/2 = 125
+    CLK_DIV #(.div_by_x2(125)) clk_x2_125 (.clk(clk), .o_clk(w_clk_100Mhz_to_400KHz));
+
+    /*
+     * RGB deserializer wiring (and VGA port wiring)
+     */
+    logic [11:0] w_rgb_444;
+    RGB_444 Rgb_444 (.D(D_PIN),
+                     .HREF(HREF_PIN),
+                     .PCLK(PCLK_PIN),
+                     .o_RGB_444(w_rgb_444));
+
+    assign VGA_R_PIN  = w_rgb_444[11:8];
+    assign VGA_G_PIN  = w_rgb_444[7:4];
+    assign VGA_B_PIN  = w_rgb_444[3:0];
+    assign VGA_HS_PIN = HREF_PIN;
+    assign VGA_VS_PIN = VSYNC_PIN;
+
+
+    /*
+     * HCI wiring
+     */
+    
     logic w_dbncd_l_btn;
     logic w_dbncd_r_btn;
     logic w_dbncd_u_btn;
@@ -101,24 +151,24 @@ module TOP
      * i2c host interface wires
      */
     
-    logic [6:0]  w_s_axis_cmd_address,
-    logic        w_s_axis_cmd_start,
-    logic        w_s_axis_cmd_read,
-    logic        w_s_axis_cmd_write,
-    logic        w_s_axis_cmd_write_multiple,
-    logic        w_s_axis_cmd_stop,
-    logic        w_s_axis_cmd_valid,
-    logic        w_s_axis_cmd_ready,
+    logic [6:0]  w_s_axis_cmd_address;
+    logic        w_s_axis_cmd_start;
+    logic        w_s_axis_cmd_read;
+    logic        w_s_axis_cmd_write;
+    logic        w_s_axis_cmd_write_multiple;
+    logic        w_s_axis_cmd_stop;
+    logic        w_s_axis_cmd_valid;
+    logic        w_s_axis_cmd_ready;
 
-    logic [7:0]  w_s_axis_data_tdata,
-    logic        w_s_axis_data_tvalid,
-    logic        w_s_axis_data_tready,
-    logic        w_s_axis_data_tlast,
+    logic [7:0]  w_s_axis_data_tdata;
+    logic        w_s_axis_data_tvalid;
+    logic        w_s_axis_data_tready;
+    logic        w_s_axis_data_tlast;
 
-    logic [7:0]  w_m_axis_data_tdata,
-    logic        w_m_axis_data_tvalid,
-    logic        w_m_axis_data_tready,
-    logic        w_m_axis_data_tlast,
+    logic [7:0]  w_m_axis_data_tdata;
+    logic        w_m_axis_data_tvalid;
+    logic        w_m_axis_data_tready;
+    logic        w_m_axis_data_tlast;
     
 
     OV7670_CAMERA_DRIVER Cam (.clk(clk),
@@ -153,16 +203,16 @@ module TOP
     /*
      * I2C interface
      */
-    logic        w_scl_i;
-    logic        w_scl_o;
-    logic        w_scl_t;
-    logic        w_sda_i;
-    logic        w_sda_o;
-    logic        w_sda_t;
-    logic inout  w_scl_pin;
-    logic inout  w_sda_pin;
+    logic w_scl_i;
+    logic w_scl_o;
+    logic w_scl_t;
+    logic w_sda_i;
+    logic w_sda_o;
+    logic w_sda_t;
+    logic w_scl_pin;
+    logic w_sda_pin;
 
-    i2c_master I2c_m (.clk(), // the SCCB clock has maximum value of 400 KHz, need to use clock divider
+    i2c_master I2c_m (.clk(w_clk_100Mhz_to_400KHz), // the SCCB clock has maximum value of 400 KHz, need to use clock divider
                       .rst(0), // Active HIGH
 
                      /*
