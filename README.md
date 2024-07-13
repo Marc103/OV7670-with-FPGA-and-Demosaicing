@@ -129,6 +129,21 @@ control device registers
 
 Right now we don't have to worry about debayering since the ov7670 has its own DSP which takes care of this kind of stuff. However, there is a way to disable the formats so we get raw data that we then need to process. That will be the next step.
 
+Turns out, the above is wrong. The ov7670 timing generator is not meant to be directly connected to the VGA output. This is
+because the frame rate of the camera and the refresh rate of the monitor aren't the same. It might be possible if the frame 
+rate and the refresh rate are the same, but I think the timings will still be off.
+
+What is really needed is a buffer in between that can accept a frame of data from the camera and seperate circuitry which
+can output the data from the buffer with its own VGA circuitry the produces the vsync and hsync signals properly. A FIFO
+buffer would be ideal, since we are crossing clock domains.
+
+1. Set up a DPORT RAM (inferrence should work but its better to use instantiation, see Vivado Design Suite 7 Series FPGA guide, UG953)
+2. Use the RGB 444 module to send the data to the buffer at the correct address
+3. Continuously read off of the video buffer and send it via a VGA control circuit which generates the appropriate vsync and hsync signals.
+
+Checkout https://www.intel.com/content/www/us/en/docs/programmable/683562/21-3/read-during-write-operation-at-the-same.html,
+to see what happens during a simultaneous read/write to the same address in memory.
+
 ### 4 7-seg displays
 - same as a one 7-seg display, but the cathodes are multiplexed
 - ![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/25665acf-fba6-425f-8521-230926c063b3)
