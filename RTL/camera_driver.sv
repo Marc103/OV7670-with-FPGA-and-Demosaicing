@@ -70,6 +70,14 @@ module OV7670_CAMERA_DRIVER
      output logic        m_axis_data_tready,
      input  logic        m_axis_data_tlast,
 
+     input  logic        busy,
+     input  logic        bus_control,
+     input  logic        bus_active,
+     input  logic        missed_ack,
+
+     output logic [15:0] prescale;
+     output logic        stop_on_idle;
+
      /*
       * Camera interface (except SIO_C and SIO_D since i2c_master takes care of that)
       */
@@ -85,6 +93,48 @@ module OV7670_CAMERA_DRIVER
 
      input logic [7:0] D
      );
+
+    /* 
+     * I2C (output) state
+     * 0x42 for read, 0x43 for write
+     * meaning, address looks like 1000 001 | W/R
+     */
+    logic [6:0]  s_s_axis_cmd_address        = 7'b1000001;
+    logic        s_s_axis_cmd_start          = 1'b0;
+    logic        s_s_axis_cmd_read           = 1'b0;
+    logic        s_s_axis_cmd_write          = 1'b0;
+    logic        s_s_axis_cmd_write_multiple = 1'b0;
+    logic        s_s_axis_cmd_stop           = 1'b1;
+    logic        s_s_axis_cmd_valid          = 1'b0;
+    logic        s_s_axus_cmd_ready          = 1'b0;
+
+    logic [7:0]  s_s_axis_data_tdata         = 1'h00;
+    logic        s_s_axis_data_tvalid;       = 1'b0;
+    logic        s_s_axis_data_tlast         = 1'b0;
+
+    logic        s_m_axis_data_tready        = 1'b0;
+
+    // 100 MHz / 400Khz * 4 = 62.5 so 63
+    logic [15:0] s_prescale                  = 16'h003F;
+    logic        s_stop_on_idle              = 1'b1;           
+
+    assign s_axis_cmd_address        = s_s_axis_cmd_address;
+    assign s_axis_cmd_start          = s_s_axis_cmd_start;
+    assign s_axis_cmd_read           = s_s_axis_cmd_read;
+    assign s_axis_cmd_write          = s_s_axis_cmd_write;
+    assign s_axis_cmd_write_multiple = s_s_axis_cmd_write_multiple;
+    assign s_axis_cmd_stop           = s_s_axis_cmd_stop;
+    assign s_axis_cmd_valid          = s_s_axis_cmd_valid;
+
+    assign s_axis_data_tdata         = s_s_axis_data_tdata;
+    assign s_axis_data_tvalid        = s_s_axis_data_tvalid;
+    assign s_axis_data_tlast         = s_s_axis_data_tlast;
+
+    assign m_axis_data_tready        = s_m_axis_data_tready;
+
+    assign prescale                  = s_prescale;
+    assign stop_on_idle              = s_stop_on_idle;
+
 
 
     // HCI State
@@ -149,9 +199,19 @@ module OV7670_CAMERA_DRIVER
                 begin
                     // Center button pressed, send command
                     state_c_btn <= 1'b0;
+
+                    s_s_axis_cmd_start <= 1'b1;
+                    s_s_axis_cmd_write <= 1'b1;
+                    s_s_axis_cmd_valid <= 1'b1;
+                    s_s_axis_cmd_ready <= 1'b1;
+                    s_s_axis_data_tdata <= binary_num;
+                    s_s_axis_data_tvalid <= 1'b1;
+
+
                 end
             else
                 begin
+                    s_s_axis_cmd_start <= 1'b0;
                     state_c_btn <= dbncd_l_btn;
                 end
 

@@ -52,8 +52,8 @@ module TOP
       * VGA Port Pins
       */
      output logic [3:0] VGA_R_PIN,
-     output logic [3:0] VGA_B_PIN,
      output logic [3:0] VGA_G_PIN,
+     output logic [3:0] VGA_B_PIN,
      output logic VGA_HS_PIN,
      output logic VGA_VS_PIN,
 
@@ -95,9 +95,7 @@ module TOP
     // 100MHz/25MHz = 4, so we use 4/2 = 2
     CLK_DIV #(.div_by_x2(2)) clk_x2_2 (.clk(clk), .o_clk(w_clk_100MHz_to_25MHz));
     assign MCLK = w_clk_100MHz_to_25MHz;
-    // 100MHz/400Khz = 250, so we use 250/2 = 125
-    CLK_DIV #(.div_by_x2(125)) clk_x2_125 (.clk(clk), .o_clk(w_clk_100Mhz_to_400KHz));
-
+   
     /*
      * RGB deserializer wiring (and VGA port wiring)
      */
@@ -107,9 +105,13 @@ module TOP
                      .PCLK(PCLK_PIN),
                      .o_RGB_444(w_rgb_444));
 
-    assign VGA_R_PIN  = w_rgb_444[11:8];
-    assign VGA_G_PIN  = w_rgb_444[7:4];
-    assign VGA_B_PIN  = w_rgb_444[3:0];
+    //assign VGA_R_PIN  = w_rgb_444[11:8];
+    //assign VGA_G_PIN  = w_rgb_444[7:4];
+    //assign VGA_B_PIN  = w_rgb_444[3:0];
+    assign VGA_R_PIN = 4'hff;
+    assign VGA_G_PIN  = 4'hff;
+    assign VGA_B_PIN  = 4'hff;
+    
     assign VGA_HS_PIN = HREF_PIN;
     assign VGA_VS_PIN = VSYNC_PIN;
 
@@ -169,6 +171,14 @@ module TOP
     logic        w_m_axis_data_tvalid;
     logic        w_m_axis_data_tready;
     logic        w_m_axis_data_tlast;
+
+    logic        w_busy;
+    logic        w_bus_control,
+    logic        w_bus_active,
+    logic        w_missed_ack,
+
+    logic [15:0] w_prescale;
+    logic        w_stop_on_idle;
     
 
     OV7670_CAMERA_DRIVER Cam (.clk(clk),
@@ -198,7 +208,15 @@ module TOP
                               
                               .m_axis_data_tdata(w_m_axis_data_tdata),
                               .m_axis_data_tvalid(w_m_axis_data_tvalid),
-                              .m_axis_data_tlast(w_m_axis_data_tlast));
+                              .m_axis_data_tlast(w_m_axis_data_tlast),
+                              
+                              .busy(w_busy),
+                              .bus_control(w_bus_control),
+                              .bus_active(w_bus_active),
+                              .missed_ack(w_missed_ack),
+                              
+                              .prescale(w_prescale),
+                              .stop_on_idle(w_stop_on_idle));
 
     /*
      * I2C interface
@@ -212,7 +230,7 @@ module TOP
     logic w_scl_pin;
     logic w_sda_pin;
 
-    i2c_master I2c_m (.clk(w_clk_100Mhz_to_400KHz), // the SCCB clock has maximum value of 400 KHz, need to use clock divider
+    i2c_master I2c_m (.clk(clk), // prescaler changes clock to 400khz
                       .rst(0), // Active HIGH
 
                      /*
@@ -252,16 +270,16 @@ module TOP
                     /*
                      * Status
                      */
-                     .busy(),
-                     .bus_control(),
-                     .bus_active(),
-                     .missed_ack(),
+                     .busy(w_busy),
+                     .bus_control(w_bus_control),
+                     .bus_active(w_bus_active),
+                     .missed_ack(w_missed_ack),
 
                     /*
                      * Configuration
                      */
-                     .prescale(),
-                     .stop_on_idle()
+                     .prescale(w_prescale),
+                     .stop_on_idle(w_stop_on_idle)
 );
 
     
