@@ -134,8 +134,7 @@ because the frame rate of the camera and the refresh rate of the monitor aren't 
 rate and the refresh rate are the same, but I think the timings will still be off.
 
 What is really needed is a buffer in between that can accept a frame of data from the camera and seperate circuitry which
-can output the data from the buffer with its own VGA circuitry the produces the vsync and hsync signals properly. A FIFO
-buffer would be ideal, since we are crossing clock domains.
+can output the data from the buffer with its own VGA circuitry the produces the vsync and hsync signals properly. 
 
 1. Set up a DPORT RAM (inferrence should work but its better to use instantiation, see Vivado Design Suite 7 Series FPGA guide, UG953)
 2. Use the RGB 444 module to send the data to the buffer at the correct address
@@ -143,6 +142,10 @@ buffer would be ideal, since we are crossing clock domains.
 
 Checkout https://www.intel.com/content/www/us/en/docs/programmable/683562/21-3/read-during-write-operation-at-the-same.html,
 to see what happens during a simultaneous read/write to the same address in memory.
+
+The Basys 3 has 1899Kb of BRAM.
+1 899 000 / (640 x 420) = roughly 6 bits per pixel, this is quite a low color resolution so instead its better to use QVGA (320 x 240)
+1 899 000 / (320 x 240) = roughly 18 bits per pixel, much better color resolution (we can use RGB 565 now) at the cost of display resolution...
 
 ### 4 7-seg displays
 - same as a one 7-seg display, but the cathodes are multiplexed
