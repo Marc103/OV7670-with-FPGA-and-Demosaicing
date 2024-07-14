@@ -98,6 +98,7 @@ module TOP
    
     /*
      * RGB deserializer wiring (and VGA port wiring)
+     * this will be changed to RGB565
      */
     logic [11:0] w_rgb_444;
     RGB_444 Rgb_444 (.D(D_PIN),
@@ -105,15 +106,38 @@ module TOP
                      .PCLK(PCLK_PIN),
                      .o_RGB_444(w_rgb_444));
 
-    //assign VGA_R_PIN  = w_rgb_444[11:8];
-    //assign VGA_G_PIN  = w_rgb_444[7:4];
-    //assign VGA_B_PIN  = w_rgb_444[3:0];
-    assign VGA_R_PIN = 4'hff;
-    assign VGA_G_PIN  = 4'hff;
-    assign VGA_B_PIN  = 4'hff;
-    
-    assign VGA_HS_PIN = HREF_PIN;
-    assign VGA_VS_PIN = VSYNC_PIN;
+
+    /*
+     * Video buffer (dual port ram)
+     */
+
+    // QVGA (320 X 240) at 18 bits per pixel
+    // 1899Kb of BRAM
+    // 320 x 240 = 76800
+
+    logic                      w_Wr_Clk;
+    logic [$clog2(76800)-1:0] w_Wr_Addr;
+    logic                      w_Wr_DV;
+    logic [11:0]               w_Wr_Data;
+
+    logic                      w_Rd_Clk;
+    logic [$clog2(76800)-1:0] w_Rd_Addr;
+    logic                      w_Rd_En;
+    logic                      w_Rd_DV;
+    logic                      w_Rd_Data;
+
+
+    RAM_2Port #(.WIDTH(18), .DEPTH(76800)) Vbuff
+               (.i_Wr_Clk(PCLK),
+                .i_Wr_Addr(w_Wr_Addr),
+                .i_Wr_DV(w_Wr_DV),
+                .i_Wr_Data(w_Wr_Data),
+                
+                .i_Rd_Clk(clk),
+                .i_Rd_Addr(w_Rd_Addr),
+                .i_Rd_En(w_Rd_En),
+                .o_Rd_DV(w_Rd_DV),
+                .o_Rd_Data(w_Rd_Data)); 
 
 
     /*
