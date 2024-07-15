@@ -1,4 +1,5 @@
 /*
+ * * DON'T USE !!!, module is buggy, need appropriate posedge and negedge detections
  * Small FSM, deserializes (every two bytes) to produce
  * rgb 444.
  * RGB 444 expected in format xR GB
