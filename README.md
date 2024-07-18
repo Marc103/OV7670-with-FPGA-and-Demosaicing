@@ -149,8 +149,8 @@ The Basys 3 has 1899Kb of BRAM.
 
 ### VGA Timing Calculations
 - read the VESA GTF first
-- reference https://web.mit.edu/6.111/www/s2004/NEWKIT/vga.shtml
-I did this calculations at Potbellys and frankly am too lazy to type it down, here you go:
+- reference https://web.mit.edu/6.111/www/s2004/NEWKIT/vga.shtml  
+I did these calculations at Potbellys and frankly am too lazy to type it down, here you go:
 ![IMG_5020_jpeg](https://github.com/user-attachments/assets/883de6fb-91ff-4b17-8a01-fe7225b16426)
 ![IMG_5021_jpeg](https://github.com/user-attachments/assets/7af04591-0ed8-44e4-810c-18241ecd336a)
 ![IMG_5022_jpeg](https://github.com/user-attachments/assets/afaec926-b404-4d55-b0f8-3ec91b7b0dcf)
