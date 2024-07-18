@@ -147,6 +147,17 @@ The Basys 3 has 1899Kb of BRAM.
 1 899 000 / (640 x 420) = roughly 6 bits per pixel, this is quite a low color resolution so instead its better to use QVGA (320 x 240)
 1 899 000 / (320 x 240) = roughly 18 bits per pixel, much better color resolution (we can use RGB 565 now) at the cost of display resolution...
 
+### VGA Timing Calculations
+- read the VESA GTF first
+- reference https://web.mit.edu/6.111/www/s2004/NEWKIT/vga.shtml
+I did this calculations at Potbellys and frankly am too lazy to type it down, here you go:
+![IMG_5020_jpeg](https://github.com/user-attachments/assets/883de6fb-91ff-4b17-8a01-fe7225b16426)
+![IMG_5021_jpeg](https://github.com/user-attachments/assets/7af04591-0ed8-44e4-810c-18241ecd336a)
+![IMG_5022_jpeg](https://github.com/user-attachments/assets/afaec926-b404-4d55-b0f8-3ec91b7b0dcf)
+![IMG_5023_jpeg](https://github.com/user-attachments/assets/8b9d5061-b2b8-475a-9b0b-5d53220dedb9)
+![IMG_5024_jpeg](https://github.com/user-attachments/assets/babb9301-f1d9-45bf-b199-a705a6c1f7af)
+![IMG_5025_jpeg](https://github.com/user-attachments/assets/95a97303-1f08-411d-9d4b-c83f9b4ccb66)
+
 ### 4 7-seg displays
 - same as a one 7-seg display, but the cathodes are multiplexed
 - ![image](https://github.com/Marc103/OV7670-with-FPGA-and-Demosaicing/assets/78170299/25665acf-fba6-425f-8521-230926c063b3)
