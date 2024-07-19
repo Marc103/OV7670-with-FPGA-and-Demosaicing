@@ -38,6 +38,10 @@ module TESTBENCH_FRAME
     end
     */
     
+    
+    
+    
+    
     logic w_clk_100MHz_to_6_25_MHz;
     logic w_clk_100MHz_to_25MHz;
     
@@ -61,18 +65,31 @@ module TESTBENCH_FRAME
     logic [3:0] w_r_bits;
     logic [3:0] w_g_bits;
     logic [3:0] w_b_bits;
+    logic w_hs;
+    logic w_vs;
+    logic [11:0] w_data;
+    
+    always_comb
+        begin
+            w_data = w_r_addr[11:0];
+        end
+    
         
-    VGA Vga_dut (.pclk(w_clk_100MHz_to_25MHz),
-                   .hsync(VGA_HS_PIN),
-                   .vsync(VGA_VS_PIN),
+    VGA_PARAM Vga_dut (.pclk(w_clk_100MHz_to_25MHz),
+                   .hsync(w_hs),
+                   .vsync(w_vs),
                    .d_r_addr(w_r_addr),
                    .red_bits(w_r_bits),
                    .green_bits(w_g_bits),
-                   .blue_bits(w_b_bits));
+                   .blue_bits(w_b_bits),
+                   .r_data(w_data));
     
     assign VGA_R_PIN = w_r_bits;
     assign VGA_G_PIN = w_g_bits;
     assign VGA_B_PIN = w_b_bits;
+    assign VGA_HS_PIN = w_hs;
+    assign VGA_VS_PIN = w_vs;
+    assign LED[0] = ~w_vs;
 
 
     
