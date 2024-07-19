@@ -9,7 +9,7 @@
 // timescale <time_unit>/<time_precision>
 `timescale 1ns / 1ps 
 
-module TOP
+module TESTBENCH_FRAME
     (input clk,
      input logic reset_,
 

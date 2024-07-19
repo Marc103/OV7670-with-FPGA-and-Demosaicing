@@ -127,7 +127,7 @@ module TOP
     logic                      w_Rd_Data;
 
 
-    RAM_2Port #(.WIDTH(18), .DEPTH(76800)) Vbuff
+    RAM_2Port #(.WIDTH(16), .DEPTH(76800)) Vbuff
                (.i_Wr_Clk(PCLK),
                 .i_Wr_Addr(w_Wr_Addr),
                 .i_Wr_DV(w_Wr_DV),

@@ -1,15 +1,14 @@
 /*
- * REQUIRES PATCHES DONT USE (the VGA one works though as it has been fully debugged)
- * QVGA Timing Circuit: 
- * 320 x 240
+ * VGA Timing Circuit: 
+ * 640 x 480
  * 60 Hz vertical frequency
- * 6.25 MHz pixel clock
+ * 25 MHz pixel clock
  * RGB 444 (since the basys 3 vga port supports 4 bits per color channel)
  * 
  * See VGA timing calculations to see how the numbers were derived.
  */
 
-module QVGA 
+module VGA 
     (input logic         pclk,
 
      /*
@@ -18,7 +17,7 @@ module QVGA
      input logic  [15:0] r_data,
      input logic         r_dv,
      output logic        r_clk,
-     output logic [16:0] r_addr,
+     output logic [18:0] r_addr,
      output logic        r_en,
 
      /*
@@ -30,7 +29,7 @@ module QVGA
      output logic        hsync,
      output logic        vsync,
      
-     output logic [16:0] d_r_addr
+     output logic [18:0] d_r_addr
      
      );
     
@@ -42,32 +41,30 @@ module QVGA
     parameter [1:0] ACTV = 2'b11; // ACTV stands for active
     
     // address state
-    logic [16:0]  r_r_addr;
-    logic [16:0]  r_r_addr_next;
+    logic [18:0]  r_r_addr;
+    logic [18:0]  r_r_addr_next;
 
     // hsync state
     logic [1:0]   s_hsync            = FP;
-    logic [8:0]   r_hsync_count      = 0;
+    logic [9:0]   r_hsync_count      = 0;
     logic         r_hsync            = 0;
     
     logic [1:0]   s_hsync_next       = FP;
-    logic [8:0]   r_hsync_count_next = 0;
+    logic [9:0]   r_hsync_count_next = 0;
     logic         r_hsync_next       = 0;
 
     // vsync state
     logic [1:0]   s_vsync            = FP;
-    logic [16:0]  r_vsync_count      = 0; 
+    logic [18:0]  r_vsync_count      = 0; 
     logic         r_vsync            = 0;
     
     logic [1:0]   s_vsync_next       = FP;
-    logic [16:0]  r_vsync_count_next = 0;
+    logic [18:0]  r_vsync_count_next = 0;
     logic         r_vsync_next       = 0;
 
     // Hsync 
     always_comb
         begin
-            if( (s_vsync == ACTV) || (s_vsync_next == ACTV) )
-            begin
             case(s_hsync)
                 FP:
                     begin
@@ -76,7 +73,7 @@ module QVGA
                         r_hsync_next = 1'b1;
                         r_hsync_count_next = r_hsync_count + 1;
 
-                        if(r_hsync_count == 9'd22) begin
+                        if(r_hsync_count == 10'd18) begin
                         s_hsync_next = SYNC;
                         r_hsync_next = 1'b0;
                         end else s_hsync_next = FP;
@@ -88,7 +85,7 @@ module QVGA
                         r_hsync_next = 1'b0;
                         r_hsync_count_next = r_hsync_count + 1;
 
-                        if(r_hsync_count == 9'd45) begin
+                        if(r_hsync_count == 10'd111) begin
                         s_hsync_next = BP;
                         r_hsync_next = 1'b1;
                         end else s_hsync_next = SYNC;
@@ -100,7 +97,7 @@ module QVGA
                         r_hsync_next = 1'b1;
                         r_hsync_count_next = r_hsync_count + 1;
 
-                        if(r_hsync_count == 9'd92) begin
+                        if(r_hsync_count == 10'd159) begin
                         s_hsync_next = ACTV;
                         r_hsync_next = 1'b1;
                         end else s_hsync_next = BP;
@@ -108,26 +105,22 @@ module QVGA
                 
                 ACTV:
                     begin
+                        if( (s_vsync != ACTV) || (s_vsync_next != ACTV))
+                        r_r_addr_next = 0;
+                        else
                         r_r_addr_next = r_r_addr + 1;
 
                         r_hsync_next = 1'b1;
                         r_hsync_count_next = r_hsync_count + 1;
 
-                        if(r_hsync_count == 9'd412) begin
+                        if(r_hsync_count == 10'd799) begin
                         s_hsync_next = FP;
                         r_hsync_next = 1'b1;
                         r_hsync_count_next = 0;
                         end else s_hsync_next = ACTV;
                     end
             endcase
-            end
-            else
-                begin
-                    r_r_addr_next = 0;
-                    r_hsync_next = 1'b0;
-                    r_hsync_count_next = 0;
-                    s_hsync_next = FP;
-                end
+           
         end
 
     // Vsync 
@@ -139,7 +132,7 @@ module QVGA
                         r_vsync_next = 1'b1;
                         r_vsync_count_next = r_vsync_count + 1;
 
-                        if(r_vsync_count == 17'd1651) begin
+                        if(r_vsync_count == 19'd7999) begin
                         s_vsync_next = SYNC;
                         r_vsync_next = 1'b0;
                         end else s_vsync_next = FP;
@@ -149,7 +142,7 @@ module QVGA
                         r_vsync_next = 1'b0;
                         r_vsync_count_next = r_vsync_count + 1;
 
-                        if(r_vsync_count == 17'd2477) begin
+                        if(r_vsync_count == 19'd9599) begin
                         s_vsync_next = BP;
                         r_vsync_next = 1'b1;
                         end else s_vsync_next = SYNC;
@@ -159,7 +152,7 @@ module QVGA
                         r_vsync_next = 1'b1;
                         r_vsync_count_next = r_vsync_count + 1;
 
-                        if(r_vsync_count == 17'd4955) begin
+                        if(r_vsync_count == 19'd32799) begin
                         s_vsync_next = ACTV;
                         r_vsync_next = 1'b1;
                         end else s_vsync_next = BP;
@@ -170,7 +163,7 @@ module QVGA
                         r_vsync_next = 1'b1;
                         r_vsync_count_next = r_vsync_count + 1;
 
-                        if(r_vsync_count == 17'd104075) begin
+                        if(r_vsync_count == 19'd416799) begin
                         s_vsync_next = FP;
                         r_vsync_next = 1'b1;
                         r_vsync_count_next = 0;
@@ -181,9 +174,24 @@ module QVGA
             
         end
 
-    assign hsync = r_hsync;
-    assign vsync = r_vsync;
-
+    always_comb
+        begin
+            if((s_hsync == ACTV) && (s_vsync == ACTV))
+                begin
+                    if(r_r_addr[2] == 0) 
+                    blue_bits = 4'hf;
+                    else blue_bits = 4'h0;
+                    red_bits = 4'h0;
+                    green_bits = 4'h0;
+                end
+            else
+                begin
+                    red_bits = 4'h0;
+                    green_bits = 4'h0;
+                    blue_bits = 4'h0;
+                end
+        end
+    
     always@(posedge pclk)
         begin
             // address state update
@@ -199,5 +207,9 @@ module QVGA
             r_vsync_count <= r_vsync_count_next;
             r_vsync       <= r_vsync_next;
         end
+    
+    
+    assign hsync = r_hsync;
+    assign vsync = r_vsync;
 
 endmodule
