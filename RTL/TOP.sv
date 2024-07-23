@@ -73,17 +73,24 @@ module TOP
     assign PWDN_PIN = 1'b0;
     assign RST_PIN = 1'b1;
     assign LED[15] = VSYNC_PIN;
-    assign LED[14:0] = 0;
+    assign LED[14] = RST_PIN;
+    assign LED[13] = PWDN_PIN;
     
-    //logic clk = 0;
-    //initial 
-    //    begin
-    //        clk = 0; 
-    //        forever 
-    //           begin
-    //            #10 clk = ~clk;
-    //            end 
-    //     end
+    assign LED[12:6] = D_PIN;
+    
+   
+    /*
+    logic clk = 0;
+    initial 
+        begin
+            clk = 0; 
+            forever 
+               begin
+                #10 clk = ~clk;
+                end 
+         end
+    */
+    
     
     /*
      * Clock wiring, to produce 25 MHz clock and 400 KHz (max 400Khz for i2c)
@@ -94,51 +101,92 @@ module TOP
 
     // 100MHz/25MHz = 4, so we use 4/2 = 2
     CLK_DIV #(.div_by_x2(2)) clk_x2_2 (.clk(clk), .o_clk(w_clk_100MHz_to_25MHz));
+    
+    // 100MHz/6.25Mhz = 16, so we use 16/2 = 8
+    CLK_DIV #(.div_by_x2(8)) clk_x2_8 (.clk(clk), .o_clk(w_clk_100MHz_to_6_25MHz));
+    
     assign MCLK = w_clk_100MHz_to_25MHz;
    
     /*
      * RGB deserializer wiring (and VGA port wiring)
      * this will be changed to RGB565
      */
-    logic [11:0] w_rgb_444;
-    RGB_444 Rgb_444 (.D(D_PIN),
-                     .HREF(HREF_PIN),
-                     .PCLK(PCLK_PIN),
-                     .o_RGB_444(w_rgb_444));
+    logic [15:0] w_rgb_444;
+    
+    logic [$clog2(76800)-1:0]  w_Wr_Addr;
+    logic                      w_Wr_DV;
+    
+    RGB_GENERIC #(.DEPTH(76800)) Rgb_444 (.D(D_PIN),
+                                          .HREF(HREF_PIN),
+                                          .VSYNC(VSYNC_PIN),
+                                          .PCLK(PCLK_PIN),
+                                          .o_RGB_generic(w_rgb_444),
+                                          .DV(w_Wr_DV),
+                                          .w_addr(w_Wr_Addr));
 
+    assign LED[5:1] = w_rgb_444[5:1];
+    assign LED[0] = w_Wr_DV;
+    
 
     /*
      * Video buffer (dual port ram)
      */
-
-    // QVGA (320 X 240) at 18 bits per pixel
+    // QVGA (320 X 240) at 4 bits per pixel (RGB 444)
     // 1899Kb of BRAM
     // 320 x 240 = 76800
 
     logic                      w_Wr_Clk;
-    logic [$clog2(76800)-1:0] w_Wr_Addr;
-    logic                      w_Wr_DV;
     logic [11:0]               w_Wr_Data;
 
     logic                      w_Rd_Clk;
-    logic [$clog2(76800)-1:0] w_Rd_Addr;
+    logic [$clog2(76800)-1:0]  w_Rd_Addr;
     logic                      w_Rd_En;
     logic                      w_Rd_DV;
-    logic                      w_Rd_Data;
+    logic [11:0]               w_Rd_Data;
+    
+    assign w_Wr_Data = w_rgb_444[11:0];
 
+    assign w_Wr_Clk = PCLK_PIN;
 
-    RAM_2Port #(.WIDTH(16), .DEPTH(76800)) Vbuff
-               (.i_Wr_Clk(PCLK),
+    RAM_2Port #(.WIDTH(12), .DEPTH(76800)) Vbuff
+               (.i_Wr_Clk(w_Wr_Clk),
                 .i_Wr_Addr(w_Wr_Addr),
                 .i_Wr_DV(w_Wr_DV),
                 .i_Wr_Data(w_Wr_Data),
                 
-                .i_Rd_Clk(clk),
+                .i_Rd_Clk(w_Rd_Clk),
                 .i_Rd_Addr(w_Rd_Addr),
                 .i_Rd_En(w_Rd_En),
                 .o_Rd_DV(w_Rd_DV),
-                .o_Rd_Data(w_Rd_Data)); 
+                .o_Rd_Data(w_Rd_Data));
 
+
+    /*
+     * VGA controller wiring
+     *
+     */
+    // VGA (640 x 480) addresses will be translated
+    // to QVGA (320 x 240) address
+
+    logic [$clog2(307200)-1:0] w_Rd_Addr_VGA;
+     
+    // incorrect transformation, leave for now
+    assign w_Rd_Addr = w_Rd_Addr_VGA >> 2;
+
+    VGA_PARAM vga ( .pclk(w_clk_100MHz_to_25MHz),
+                    .r_data(w_Rd_Data),
+                    .r_dv(w_Rd_DV),
+
+                    .r_clk(w_Rd_Clk), 
+                    .r_addr(w_Rd_Addr_VGA),
+                    .r_en(w_Rd_En),
+                    
+                    .red_bits(VGA_R_PIN),
+                    .green_bits(VGA_G_PIN),
+                    .blue_bits(VGA_B_PIN),
+                    
+                    .hsync(VGA_HS_PIN),
+                    .vsync(VGA_VS_PIN));
 
     /*
      * HCI wiring
@@ -197,9 +245,9 @@ module TOP
     logic        w_m_axis_data_tlast;
 
     logic        w_busy;
-    logic        w_bus_control,
-    logic        w_bus_active,
-    logic        w_missed_ack,
+    logic        w_bus_control;
+    logic        w_bus_active;
+    logic        w_missed_ack;
 
     logic [15:0] w_prescale;
     logic        w_stop_on_idle;
@@ -321,9 +369,6 @@ module TOP
                              .CF(CF_PIN),
                              .CG(CG_PIN),
                              .DP(DP_PIN));
-                             
-    
-    initial $display("%b", Sd4_7.counter);
 
     
 endmodule

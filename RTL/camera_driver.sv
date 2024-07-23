@@ -75,8 +75,8 @@ module OV7670_CAMERA_DRIVER
      input  logic        bus_active,
      input  logic        missed_ack,
 
-     output logic [15:0] prescale;
-     output logic        stop_on_idle;
+     output logic [15:0] prescale,
+     output logic        stop_on_idle,
 
      /*
       * Camera interface (except SIO_C and SIO_D since i2c_master takes care of that)
@@ -106,10 +106,10 @@ module OV7670_CAMERA_DRIVER
     logic        s_s_axis_cmd_write_multiple = 1'b0;
     logic        s_s_axis_cmd_stop           = 1'b1;
     logic        s_s_axis_cmd_valid          = 1'b0;
-    logic        s_s_axus_cmd_ready          = 1'b0;
+    logic        s_s_axis_cmd_ready          = 1'b0;
 
-    logic [7:0]  s_s_axis_data_tdata         = 1'h00;
-    logic        s_s_axis_data_tvalid;       = 1'b0;
+    logic [7:0]  s_s_axis_data_tdata         = 8'h00;
+    logic        s_s_axis_data_tvalid        = 1'b0;
     logic        s_s_axis_data_tlast         = 1'b0;
 
     logic        s_m_axis_data_tready        = 1'b0;
