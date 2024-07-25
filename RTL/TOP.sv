@@ -8,7 +8,7 @@
 `timescale 1ns / 1ps 
 
 module TOP
-    (input clk,
+    (//input clk,
      input logic reset_,
 
      /*
@@ -79,7 +79,7 @@ module TOP
     assign LED[12:6] = D_PIN;
     
    
-    /*
+    
     logic clk = 0;
     initial 
         begin
@@ -89,7 +89,8 @@ module TOP
                 #10 clk = ~clk;
                 end 
          end
-    */
+    
+    
     
     
     /*
@@ -113,19 +114,37 @@ module TOP
      */
     logic [15:0] w_rgb_444;
     
+    logic [$clog2(307200)-1:0] w_Wr_RGB;
+    logic [$clog2(640)-1:0]    w_cam_to_vbuff_pixel_x;
+    logic [$clog2(480)-1:0]    w_cam_to_vbuff_pixel_y;
     logic [$clog2(76800)-1:0]  w_Wr_Addr;
     logic                      w_Wr_DV;
     
-    RGB_GENERIC #(.DEPTH(76800)) Rgb_444 (.D(D_PIN),
-                                          .HREF(HREF_PIN),
-                                          .VSYNC(VSYNC_PIN),
-                                          .PCLK(PCLK_PIN),
-                                          .o_RGB_generic(w_rgb_444),
-                                          .DV(w_Wr_DV),
-                                          .w_addr(w_Wr_Addr));
+    RGB_GENERIC Rgb_444 (.D(D_PIN),
+                         .HREF(HREF_PIN),
+                         .VSYNC(VSYNC_PIN),
+                         .PCLK(PCLK_PIN),
+                         .o_RGB_generic(w_rgb_444),
+                         .DV(w_Wr_DV),
+                         .w_addr(w_Wr_RGB),
+                         .pixel_x(w_cam_to_vbuff_pixel_x),
+                         .pixel_y(w_cam_to_vbuff_pixel_y));
 
-    assign LED[5:1] = w_rgb_444[5:1];
-    assign LED[0] = w_Wr_DV;
+    
+    /*
+    RES_ADDR_TRANSFORM cam_to_vbuff (.in_pixel_x(w_cam_to_vbuff_pixel_x),
+                                     .in_pixel_y(w_cam_to_vbuff_pixel_y),
+                                     .out_addr(w_Wr_Addr));
+   */
+   
+   
+   assign w_Wr_Addr = w_Wr_RGB >> 2;
+   
+   // Incorrect transformation, leave for now
+   //assign w_Wr_Addr = w_Wr_RGB >> 2;
+    
+   assign LED[5:1] = w_rgb_444[5:1];
+   assign LED[0] = w_Wr_DV;
     
 
     /*
@@ -169,10 +188,9 @@ module TOP
     // to QVGA (320 x 240) address
 
     logic [$clog2(307200)-1:0] w_Rd_Addr_VGA;
-     
-    // incorrect transformation, leave for now
-    assign w_Rd_Addr = w_Rd_Addr_VGA >> 2;
-
+    logic [$clog2(640)-1:0]    w_vga_to_vbuff_pixel_x;
+    logic [$clog2(480)-1:0]    w_vga_to_vbuff_pixel_y;
+    
     VGA_PARAM vga ( .pclk(w_clk_100MHz_to_25MHz),
                     .r_data(w_Rd_Data),
                     .r_dv(w_Rd_DV),
@@ -180,6 +198,8 @@ module TOP
                     .r_clk(w_Rd_Clk), 
                     .r_addr(w_Rd_Addr_VGA),
                     .r_en(w_Rd_En),
+                    .pixel_x(w_vga_to_vbuff_pixel_x),
+                    .pixel_y(w_vga_to_vbuff_pixel_y),
                     
                     .red_bits(VGA_R_PIN),
                     .green_bits(VGA_G_PIN),
@@ -187,6 +207,10 @@ module TOP
                     
                     .hsync(VGA_HS_PIN),
                     .vsync(VGA_VS_PIN));
+                    
+    RES_ADDR_TRANSFORM vga_to_vbuff (.in_pixel_x(w_vga_to_vbuff_pixel_x),
+                                     .in_pixel_y(w_vga_to_vbuff_pixel_y),
+                                     .out_addr(w_Rd_Addr));
 
     /*
      * HCI wiring

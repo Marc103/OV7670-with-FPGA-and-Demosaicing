@@ -4,6 +4,7 @@
  * Small FSM, deserializes (every two bytes) to produce 
  * rgb generic.
  * also produces the appropriate address to write to video memory.
+ * including separate x and y position of pixel (for use in transformations)
  */
 
   module RGB_GENERIC #(RESOLUTION_WIDTH = 640, RESOLUTION_HEIGHT = 480)
@@ -13,7 +14,10 @@
      input  logic  PCLK,
      output logic  [15:0] o_RGB_generic,
      output logic  DV,
-     output logic  [$clog2(RESOLUTION_WIDTH * RESOLUTION_HEIGHT)-1:0] w_addr );
+     output logic  [$clog2(RESOLUTION_WIDTH * RESOLUTION_HEIGHT)-1:0] w_addr,
+     output logic  [$clog2(RESOLUTION_WIDTH)-1:0] pixel_x,
+     output logic  [$clog2(RESOLUTION_HEIGHT)-1:0] pixel_y
+    );
 
     parameter s_BYTE_0 = 1'b0;
     parameter s_BYTE_1 = 1'b1;
@@ -30,9 +34,6 @@
     logic [$clog2(RESOLUTION_HEIGHT)-1:0] r_vsync_count;
     logic [$clog2(RESOLUTION_HEIGHT)-1:0] r_vsync_count_next;
 
-    logic s_status = s_STOPPED;
-    logic s_status_next = s_STOPPED;
-
     logic s_byte = s_BYTE_1;
     logic s_byte_next = s_BYTE_1;
 
@@ -45,9 +46,8 @@
     logic [$clog2(RESOLUTION_WIDTH * RESOLUTION_HEIGHT)-1:0] r_w_addr = 0;
     logic [$clog2(RESOLUTION_WIDTH * RESOLUTION_HEIGHT)-1:0] r_w_addr_next = 0;
 
-    assign o_RGB_generic = r_pixel_data;
-    assign DV      = r_DV;
-    assign w_addr  = r_w_addr;
+    logic [$clog2(RESOLUTION_WIDTH)-1:0] pixel_x;
+    logic [$clog2(RESOLUTION_HEIGHT)-1:0] pixel_y; 
 
     // HREF 
     always_comb
@@ -110,12 +110,15 @@
             if((s_vsync == 1'b1) && (VSYNC == 1'b0))
                 begin
                     r_vsync_count_next = 0;
+                    r_w_addr_next = 0;
                 end
 
             // VSYNC low
             else if(s_vsync == 1'b0)
                 begin
                     r_vsync_count_next = r_vsync_count;
+                    r_w_addr_next = r_w_addr_next;
+
                     // Posedge detection of HREF (Start)
                     if((s_href == 1'b0) && (HREF == 1'b1))
                         begin
@@ -125,6 +128,8 @@
                     // HREF high
                     else if(s_href == 1'b1)
                         begin
+                            r_vsync_count_next = r_vsync_count;
+                            
                             case(s_byte)
                                 s_BYTE_0:
                                     begin
@@ -138,7 +143,7 @@
 
                         end
 
-                    // Negedge detection of HREF  HREF low
+                    // Negedge detection of HREF 
                     else if ((s_href == 1'b1) && (HREF == 1'b0))
                         begin
                             r_w_addr_next = r_w_addr;
@@ -147,7 +152,8 @@
                     // HREF low
                     else
                         begin
-
+                            r_w_addr_next = r_w_addr;
+                            r_vsync_count_next = r_vsync_count;
                         end
                     
                 end
@@ -155,7 +161,8 @@
             // Posedge detection of VSYNC or VSYNC high
             else if (((s_vsync == 1'b0) && (VSYNC == 1'b1)) || (s_vsync == 1'b1))
                 begin
-                    r_vsync_count_next = r_vsync_count + 1;
+                    r_w_addr_next = r_w_addr;
+                    r_vsync_count_next = r_vsync_count;
                 end
             
 
@@ -168,11 +175,16 @@
             r_href_count  <= r_href_count_next;
             s_vsync       <= s_vsync_next;
             r_vsync_count <= r_vsync_count_next;
-            s_status      <= s_status_next;
             s_byte        <= s_byte_next;
             r_pixel_data  <= r_pixel_data_next;
             r_DV          <= r_DV_next;
             r_w_addr      <= r_w_addr_next;
         end
+    
+    assign o_RGB_generic = r_pixel_data;
+    assign DV      = r_DV;
+    assign w_addr  = r_w_addr;
+    assign pixel_x = r_href_count;
+    assign pixel_y = r_vsync_count;
 
 endmodule

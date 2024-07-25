@@ -1,7 +1,6 @@
 /*
- * This is a generalized VGA drivers, expects RGB 444 
- * RESOLUTION_WIDTH , the display resolution width (number of active pixels in a line)
- * RESOLUTION_HEIGHT, the display resolution height (number of active lines in a frame)
+ * Essentially the vga_controller_parameterized modified to generate
+ * the appropriate href signals along the 
  * H_FP  , horizontal front porch, unit is pixels
  * H_SYNC, horizontal sync pulse , unit is pixels
  * H_BP  , horizontal back porch , unit is pixels
@@ -32,6 +31,9 @@ module VGA_PARAM
      output logic        r_clk,
      output logic [$clog2(RESOLUTION_WIDTH * RESOLUTION_HEIGHT):0] r_addr,
      output logic        r_en,
+     output logic [$clog2(RESOLUTION_WIDTH):0] pixel_x,
+     output logic [$clog2(RESOLUTION_HEIGHT):0] pixel_y,
+
 
      /*
       * VGA ports
@@ -246,6 +248,10 @@ module VGA_PARAM
     assign r_addr = r_r_addr;
     assign r_clk = pclk;
     assign r_en = 1'b1;
+    
+    // Hope this happens in one cycle
+    assign pixel_x = r_hsync_count - (H_FP + H_SYNC + H_BP);
+    assign pixel_y = r_vsync_count - (V_FP + V_SYNC + V_BP - 1); 
 
     assign hsync = r_hsync;
     assign vsync = r_vsync;

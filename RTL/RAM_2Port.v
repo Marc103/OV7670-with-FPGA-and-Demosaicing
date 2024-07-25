@@ -49,6 +49,10 @@ module RAM_2Port #(parameter WIDTH = 16, DEPTH = 256)
         r_Mem[1921] = 12'hff0;
         r_Mem[2240] = 12'hff0;
         r_Mem[2241] = 12'hff0;
+        r_Mem[2560] = 12'hf00;
+        r_Mem[2561] = 12'hf00;
+ 
+        
         
         
         
