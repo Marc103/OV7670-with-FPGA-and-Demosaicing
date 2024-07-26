@@ -117,7 +117,7 @@
             else if(s_vsync == 1'b0)
                 begin
                     r_vsync_count_next = r_vsync_count;
-                    r_w_addr_next = r_w_addr_next;
+                    r_w_addr_next = r_w_addr;
 
                     // Posedge detection of HREF (Start)
                     if((s_href == 1'b0) && (HREF == 1'b1))
@@ -144,13 +144,13 @@
                         end
 
                     // Negedge detection of HREF 
-                    else if ((s_href == 1'b1) && (HREF == 1'b0))
+                    if ((s_href == 1'b1) && (HREF == 1'b0))
                         begin
-                            r_w_addr_next = r_w_addr;
+                            r_w_addr_next = r_w_addr + 1;
                             r_vsync_count_next = r_vsync_count + 1;
                         end
                     // HREF low
-                    else
+                    else if(HREF == 1'b0)
                         begin
                             r_w_addr_next = r_w_addr;
                             r_vsync_count_next = r_vsync_count;

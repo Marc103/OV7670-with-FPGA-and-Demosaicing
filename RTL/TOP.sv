@@ -8,7 +8,7 @@
 `timescale 1ns / 1ps 
 
 module TOP
-    (//input clk,
+    (input clk,
      input logic reset_,
 
      /*
@@ -79,7 +79,7 @@ module TOP
     assign LED[12:6] = D_PIN;
     
    
-    
+    /*
     logic clk = 0;
     initial 
         begin
@@ -89,7 +89,7 @@ module TOP
                 #10 clk = ~clk;
                 end 
          end
-    
+    */
     
     
     
@@ -131,14 +131,14 @@ module TOP
                          .pixel_y(w_cam_to_vbuff_pixel_y));
 
     
-    /*
+    
     RES_ADDR_TRANSFORM cam_to_vbuff (.in_pixel_x(w_cam_to_vbuff_pixel_x),
                                      .in_pixel_y(w_cam_to_vbuff_pixel_y),
                                      .out_addr(w_Wr_Addr));
-   */
    
    
-   assign w_Wr_Addr = w_Wr_RGB >> 2;
+   //
+   // assign w_Wr_Addr = w_Wr_RGB >> 2;
    
    // Incorrect transformation, leave for now
    //assign w_Wr_Addr = w_Wr_RGB >> 2;
