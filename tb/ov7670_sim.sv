@@ -1,3 +1,16 @@
+/*
+ * Essentially the vga_controller_parameterized modified to generate
+ * the appropriate href signals along the 
+ * H_FP  , horizontal front porch, unit is pixels
+ * H_SYNC, horizontal sync pulse , unit is pixels
+ * H_BP  , horizontal back porch , unit is pixels
+ * V_FP  , vertical front porch  , unit is lines
+ * V_SYNC, vertical sync pulse   , unit is lines
+ * V_BP  , vertical sync pulse   , unit is lines
+ *
+ * The default values are set to VGA 640x480 @60hz with a 25 MHz pixel clock
+ */
+ 
 module OV7670_SIM 
     #(parameter RESOLUTION_WIDTH  = 640,
       parameter RESOLUTION_HEIGHT = 480,

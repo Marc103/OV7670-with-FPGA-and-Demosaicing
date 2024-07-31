@@ -1,6 +1,5 @@
 /*
- * Essentially the vga_controller_parameterized modified to generate
- * the appropriate href signals along the 
+ * Parameterized VGA controller
  * H_FP  , horizontal front porch, unit is pixels
  * H_SYNC, horizontal sync pulse , unit is pixels
  * H_BP  , horizontal back porch , unit is pixels
