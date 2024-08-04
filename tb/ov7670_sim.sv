@@ -211,7 +211,7 @@ module OV7670_SIM
     always@(negedge pclk)
         begin
             // address state update
-            r_r_addr = r_r_addr_next;
+            r_r_addr <= r_r_addr_next;
 
             // D state update
             r_D           <= image[r_r_addr];

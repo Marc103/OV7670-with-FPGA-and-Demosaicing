@@ -224,7 +224,7 @@ module VGA_PARAM
     always@(posedge pclk)
         begin
             // address state update
-            r_r_addr = r_r_addr_next;
+            r_r_addr <= r_r_addr_next;
             
             // hsync state update
             s_hsync       <= s_hsync_next;
