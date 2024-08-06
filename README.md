@@ -3,6 +3,26 @@ This project is intended to exercise concepts relating to embedded digital image
 In particular, to become familiar with interfacing with the OV7670 using I2C, demosaicing bayer pattern, and with VGA output.
 was also to develop a concrete understanding of pipeling and parallelism. All diagrams are taken from the reading sources.
 
+## Updates
+Got the SCCB working and so was able to write to the registers on the camera. Right now it's manual,
+and the plan is to make an init module to write these values on power on.
+
+Here's what the image looks like
+![IMG_5034_j](https://github.com/user-attachments/assets/22ce48cc-9f75-4e27-83d8-4e67a46ed51c)
+compared to real one
+![IMG_5033_j](https://github.com/user-attachments/assets/dfc1d300-a44c-47c6-849f-f32220bc1def)
+
+I think that many more adjustments to the settings on the camera need to be made so that we get a 
+full color picture as suppose to grayscale. I know this because the test pattern generator produced
+all colors well and so reading and displaying the data is done correctly.
+![IMG_5035_jpeg](https://github.com/user-attachments/assets/77b69d23-bb6b-4800-9e9d-85f5738074ea)
+
+Okay so what about the 'debayering' part? Well I found that most of the time was spent
+setting up and testing the 'infrastructure' before actually doing any heavy computational stuff.
+That would be the next (and final) checkpoint when time permits.
+
+As of now I'm going to call it day.
+
 ## Suggested Reading 
 The basic areas that need to be covered are
 - OV7670 datasheet (https://web.mit.edu/6.111/www/f2016/tools/OV7670_2006.pdf)
