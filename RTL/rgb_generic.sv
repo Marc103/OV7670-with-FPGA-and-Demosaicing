@@ -21,12 +21,12 @@
 
     parameter s_BYTE_0 = 1'b0;
     parameter s_BYTE_1 = 1'b1;
-    
-    logic        s_href = 1'b0;
-    logic        s_href_next = 1'b0;
 
     logic [$clog2(RESOLUTION_WIDTH)-1:0] r_href_count;
     logic [$clog2(RESOLUTION_WIDTH)-1:0] r_href_count_next;
+    
+    logic s_href;
+    logic s_href_next;
 
     logic        s_vsync = 1'b0;
     logic        s_vsync_next = 1'b0;
@@ -34,8 +34,8 @@
     logic [$clog2(RESOLUTION_HEIGHT)-1:0] r_vsync_count;
     logic [$clog2(RESOLUTION_HEIGHT)-1:0] r_vsync_count_next;
 
-    logic s_byte = s_BYTE_1;
-    logic s_byte_next = s_BYTE_1;
+    logic s_byte = s_BYTE_0;
+    logic s_byte_next = s_BYTE_0;
 
     logic [15:0] r_pixel_data;
     logic [15:0] r_pixel_data_next;
@@ -52,24 +52,13 @@
     // HREF 
     always_comb
         begin
-            s_href_next       = HREF;
             s_byte_next       = s_BYTE_0;
-            r_pixel_data_next = 0;
+            s_href_next       = HREF;
             r_DV_next         = 1'b0;
             r_href_count_next = 0;
+            r_pixel_data_next = r_pixel_data;
 
-            // Posedge detection of HREF (Start)
-            if((s_href == 1'b0) && (HREF == 1'b1))
-                begin
-                    r_pixel_data_next[15:8] = D;
-                    s_byte_next             = s_BYTE_1;
-                    r_DV_next               = 1'b0;
-                    r_href_count_next       = 0;
-
-                end
-
-            // HREF high
-            else if(s_href == 1'b1)
+            if(HREF == 1'b1)
                 begin
                     case(s_byte)
                         s_BYTE_0:
@@ -86,17 +75,13 @@
                                 r_DV_next               = 1'b1;
                                 r_href_count_next       = r_href_count;   
                             end
-                    endcase 
+                    endcase
+                end
+            else
+                begin
+                    s_byte_next             = s_BYTE_0;
                 end
 
-            // Negedge detection of HREF or HREF low
-            else if (((s_href == 1'b1) && (HREF == 1'b0)) || (s_href == 1'b0))
-                begin
-                    s_byte_next       = s_BYTE_0;
-                    r_pixel_data_next = 0;
-                    r_DV_next         = 1'b0;
-                    r_href_count_next = 0;
-                end
         end
 
     // VSYNC 

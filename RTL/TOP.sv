@@ -72,11 +72,9 @@ module TOP
     
     assign PWDN_PIN = 1'b0;
     assign RST_PIN = 1'b1;
-    assign LED[15] = VSYNC_PIN;
-    assign LED[14] = RST_PIN;
-    assign LED[13] = PWDN_PIN;
     
-    assign LED[12:6] = D_PIN;
+    
+
     
    
     /*
@@ -114,7 +112,7 @@ module TOP
      */
     logic [15:0] w_rgb_444;
     
-    logic [$clog2(307200)-1:0] w_Wr_RGB;
+    logic [$clog2(307200)-1:0] w_Wr_RGB_Addr;
     logic [$clog2(640)-1:0]    w_cam_to_vbuff_pixel_x;
     logic [$clog2(480)-1:0]    w_cam_to_vbuff_pixel_y;
     logic [$clog2(76800)-1:0]  w_Wr_Addr;
@@ -126,7 +124,7 @@ module TOP
                          .PCLK(PCLK_PIN),
                          .o_RGB_generic(w_rgb_444),
                          .DV(w_Wr_DV),
-                         .w_addr(w_Wr_RGB),
+                         .w_addr(w_Wr_RGB_Addr),
                          .pixel_x(w_cam_to_vbuff_pixel_x),
                          .pixel_y(w_cam_to_vbuff_pixel_y));
 
@@ -137,14 +135,12 @@ module TOP
                                      .out_addr(w_Wr_Addr));
    
    
-   //
-   // assign w_Wr_Addr = w_Wr_RGB >> 2;
+   
+   //assign w_Wr_Addr = w_Wr_RGB_Addr;
    
    // Incorrect transformation, leave for now
    //assign w_Wr_Addr = w_Wr_RGB >> 2;
-    
-   assign LED[5:1] = w_rgb_444[5:1];
-   assign LED[0] = w_Wr_DV;
+   
     
 
     /*
@@ -241,7 +237,7 @@ module TOP
                           .o_Switch(w_dbncd_d_btn));
 
     Debounce_Switch C_btn(.i_Clk(clk),
-                          .i_Switch(d_btn_PIN),
+                          .i_Switch(c_btn_PIN),
                           .o_Switch(w_dbncd_c_btn));
                         
 
@@ -249,32 +245,13 @@ module TOP
      * i2c host interface wires
      */
     
-    logic [6:0]  w_s_axis_cmd_address;
-    logic        w_s_axis_cmd_start;
-    logic        w_s_axis_cmd_read;
-    logic        w_s_axis_cmd_write;
-    logic        w_s_axis_cmd_write_multiple;
-    logic        w_s_axis_cmd_stop;
-    logic        w_s_axis_cmd_valid;
-    logic        w_s_axis_cmd_ready;
+    logic       w_usher;
+    logic [7:0] w_address;
+    logic [7:0] w_subaddress;
+    logic [7:0] w_data;
+    logic [1:0] w_mode;
 
-    logic [7:0]  w_s_axis_data_tdata;
-    logic        w_s_axis_data_tvalid;
-    logic        w_s_axis_data_tready;
-    logic        w_s_axis_data_tlast;
-
-    logic [7:0]  w_m_axis_data_tdata;
-    logic        w_m_axis_data_tvalid;
-    logic        w_m_axis_data_tready;
-    logic        w_m_axis_data_tlast;
-
-    logic        w_busy;
-    logic        w_bus_control;
-    logic        w_bus_active;
-    logic        w_missed_ack;
-
-    logic [15:0] w_prescale;
-    logic        w_stop_on_idle;
+    logic w_busy;
     
 
     OV7670_CAMERA_DRIVER Cam (.clk(clk),
@@ -287,96 +264,29 @@ module TOP
                               .dbncd_c_btn(w_dbncd_c_btn),
                               .switches(switches_PIN),
                               .binary_num(w_binary_num),
+
+                              .o_usher(w_usher),
+                              .o_address(w_address),
+                              .o_subaddress(w_subaddress),
+                              .o_data(w_data),
+                              .o_mode(w_mode),
+
+                              .i_busy(w_busy)
+
+                              );
                               
-                              .s_axis_cmd_address(w_s_axis_cmd_address),
-                              .s_axis_cmd_start(w_s_axis_cmd_start),
-                              .s_axis_cmd_read(w_s_axis_cmd_read),
-                              .s_axis_cmd_write(w_s_axis_cmd_write),
-                              .s_axis_cmd_write_multiple(w_s_axis_cmd_write_multiple),
-                              .s_axis_cmd_stop(w_s_axis_cmd_stop),
-                              .s_axis_cmd_valid(w_s_axis_cmd_valid),
-                              .s_axis_cmd_ready(w_s_axis_cmd_ready),
-                              
-                              .s_axis_data_tdata(w_s_axis_data_tdata),
-                              .s_axis_data_tvalid(w_s_axis_data_tvalid),
-                              .s_axis_data_tready(w_s_axis_data_tready),
-                              .s_axis_data_tlast(w_s_axis_data_tlast),
-                              
-                              .m_axis_data_tdata(w_m_axis_data_tdata),
-                              .m_axis_data_tvalid(w_m_axis_data_tvalid),
-                              .m_axis_data_tlast(w_m_axis_data_tlast),
-                              
-                              .busy(w_busy),
-                              .bus_control(w_bus_control),
-                              .bus_active(w_bus_active),
-                              .missed_ack(w_missed_ack),
-                              
-                              .prescale(w_prescale),
-                              .stop_on_idle(w_stop_on_idle));
+    assign LED[15:8] = w_subaddress;
+    assign LED[7:0]  = w_data;
 
-    /*
-     * I2C interface
-     */
-    logic w_scl_i;
-    logic w_scl_o;
-    logic w_scl_t;
-    logic w_sda_i;
-    logic w_sda_o;
-    logic w_sda_t;
-    logic w_scl_pin;
-    logic w_sda_pin;
-
-    i2c_master I2c_m (.clk(clk), // prescaler changes clock to 400khz
-                      .rst(0), // Active HIGH
-
-                     /*
-                      * Host interface
-                      */
-                     .s_axis_cmd_address(w_s_axis_cmd_address),
-                     .s_axis_cmd_start(w_s_axis_cmd_start),
-                     .s_axis_cmd_read(w_s_axis_cmd_read),
-                     .s_axis_cmd_write(w_s_axis_cmd_write),
-                     .s_axis_cmd_write_multiple(w_s_axis_cmd_write_multiple),
-                     .s_axis_cmd_stop(w_s_axis_cmd_stop),
-                     .s_axis_cmd_valid(w_s_axis_cmd_valid),
-                     .s_axis_cmd_ready(w_s_axis_cmd_ready),
-
-                     .s_axis_data_tdata(w_s_axis_data_tdata),
-                     .s_axis_data_tvalid(w_s_axis_data_tvalid),
-                     .s_axis_data_tready(w_s_axis_data_tready),
-                     .s_axis_data_tlast(w_s_axis_data_tlast),
-
-                     .m_axis_data_tdata(w_m_axis_data_tdata),
-                     .m_axis_data_tvalid(w_m_axis_data_tvalid),
-                     .m_axis_data_tready(w_m_axis_data_tready),
-                     .m_axis_data_tlast(w_m_axis_data_tlast),
-
-                    /*
-                     * I2C interface
-                     */
-                     .scl_i(), // Turns out, you can assign module ports within the module itself
-                     .scl_o(), // So, we just leave these blank.
-                     .scl_t(),
-                     .sda_i(),
-                     .sda_o(),
-                     .sda_t(),
-                     .scl_pin(SCL_PIN),
-                     .sda_pin(SDA_PIN),
-
-                    /*
-                     * Status
-                     */
-                     .busy(w_busy),
-                     .bus_control(w_bus_control),
-                     .bus_active(w_bus_active),
-                     .missed_ack(w_missed_ack),
-
-                    /*
-                     * Configuration
-                     */
-                     .prescale(w_prescale),
-                     .stop_on_idle(w_stop_on_idle)
-);
+    SCCB sccb (.clk(clk),
+               .i_usher(w_usher),
+               .i_address(w_address),
+               .i_subaddress(w_subaddress),
+               .i_data(w_data),
+               .i_mode(w_mode),
+               .o_busy(w_busy),
+               .io_sda(SDA_PIN),
+               .o_scl(SCL_PIN));
 
     
     SEGMENT_DRIVER_4_7 Sd4_7(.clk(clk),

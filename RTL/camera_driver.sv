@@ -49,49 +49,17 @@ module OV7670_CAMERA_DRIVER
      // todo add seven seg
 
      /*
-      * i2c master interface
+      * i2c host interface
       */
-     output logic [6:0]  s_axis_cmd_address,
-     output logic        s_axis_cmd_start,
-     output logic        s_axis_cmd_read,
-     output logic        s_axis_cmd_write,
-     output logic        s_axis_cmd_write_multiple,
-     output logic        s_axis_cmd_stop,
-     output logic        s_axis_cmd_valid,
-     input  logic        s_axis_cmd_ready,
+     output logic       o_usher,
+     output logic [7:0] o_address,
+     output logic [7:0] o_subaddress,
+     output logic [7:0] o_data,
+     output logic [1:0] o_mode,
 
-     output logic [7:0]  s_axis_data_tdata,
-     output logic        s_axis_data_tvalid,
-     input  logic        s_axis_data_tready,
-     output logic        s_axis_data_tlast,
+     input  logic       i_busy,
+     input  logic [7:0] i_data
 
-     input  logic [7:0]  m_axis_data_tdata,
-     input  logic        m_axis_data_tvalid,
-     output logic        m_axis_data_tready,
-     input  logic        m_axis_data_tlast,
-
-     input  logic        busy,
-     input  logic        bus_control,
-     input  logic        bus_active,
-     input  logic        missed_ack,
-
-     output logic [15:0] prescale,
-     output logic        stop_on_idle,
-
-     /*
-      * Camera interface (except SIO_C and SIO_D since i2c_master takes care of that)
-      */
-     output logic XCLK,
-
-     // video timing generator signals
-     input  logic STROBE,
-     input  logic HREF,
-     input  logic PCLK,
-     input  logic VSYNC,
-     output logic RESET_,
-     output logic PWDN,
-
-     input logic [7:0] D
      );
 
     /* 
@@ -99,43 +67,13 @@ module OV7670_CAMERA_DRIVER
      * 0x42 for read, 0x43 for write
      * meaning, address looks like 1000 001 | W/R
      */
-    logic [6:0]  s_s_axis_cmd_address        = 7'b1000001;
-    logic        s_s_axis_cmd_start          = 1'b0;
-    logic        s_s_axis_cmd_read           = 1'b0;
-    logic        s_s_axis_cmd_write          = 1'b0;
-    logic        s_s_axis_cmd_write_multiple = 1'b0;
-    logic        s_s_axis_cmd_stop           = 1'b1;
-    logic        s_s_axis_cmd_valid          = 1'b0;
-    logic        s_s_axis_cmd_ready          = 1'b0;
-
-    logic [7:0]  s_s_axis_data_tdata         = 8'h00;
-    logic        s_s_axis_data_tvalid        = 1'b0;
-    logic        s_s_axis_data_tlast         = 1'b0;
-
-    logic        s_m_axis_data_tready        = 1'b0;
-
-    // 100 MHz / 400Khz * 4 = 62.5 so 63
-    logic [15:0] s_prescale                  = 16'h003F;
-    logic        s_stop_on_idle              = 1'b1;           
-
-    assign s_axis_cmd_address        = s_s_axis_cmd_address;
-    assign s_axis_cmd_start          = s_s_axis_cmd_start;
-    assign s_axis_cmd_read           = s_s_axis_cmd_read;
-    assign s_axis_cmd_write          = s_s_axis_cmd_write;
-    assign s_axis_cmd_write_multiple = s_s_axis_cmd_write_multiple;
-    assign s_axis_cmd_stop           = s_s_axis_cmd_stop;
-    assign s_axis_cmd_valid          = s_s_axis_cmd_valid;
-
-    assign s_axis_data_tdata         = s_s_axis_data_tdata;
-    assign s_axis_data_tvalid        = s_s_axis_data_tvalid;
-    assign s_axis_data_tlast         = s_s_axis_data_tlast;
-
-    assign m_axis_data_tready        = s_m_axis_data_tready;
-
-    assign prescale                  = s_prescale;
-    assign stop_on_idle              = s_stop_on_idle;
-
-
+    
+    // i2c, as of now, just writes will happen
+    logic       r_usher;
+    logic [7:0] r_address;
+    logic [7:0] r_subaddress;
+    logic [7:0] r_data;
+    logic [1:0] r_mode;
 
     // HCI State
     logic state_l_btn;
@@ -195,33 +133,34 @@ module OV7670_CAMERA_DRIVER
                     state_d_btn <= dbncd_d_btn;
                 end
             
-            if((state_c_btn == 1'b1 && dbncd_c_btn == 1'b0))
+            if((state_c_btn == 1'b1) && (dbncd_c_btn == 1'b0))
                 begin
                     // Center button pressed, send command
                     state_c_btn <= 1'b0;
-
-                    s_s_axis_cmd_start <= 1'b1;
-                    s_s_axis_cmd_write <= 1'b1;
-                    s_s_axis_cmd_valid <= 1'b1;
-                    s_s_axis_cmd_ready <= 1'b1;
-                    s_s_axis_data_tdata <= binary_num;
-                    s_s_axis_data_tvalid <= 1'b1;
-
-
+                    
+                    if(!i_busy)
+                        r_usher <= 1'b1;
+                    else
+                        r_usher <= 1'b0;   
+                            
                 end
             else
                 begin
-                    s_s_axis_cmd_start <= 1'b0;
-                    state_c_btn <= dbncd_l_btn;
+                    state_c_btn  <= dbncd_c_btn;
+                    r_usher      <= 1'b0;
                 end
+            
+            r_address    <= 8'h42;
+            r_subaddress <= binary_num;
+            r_data       <= switches;
+            r_mode       <= 1'b00;
 
         end
 
-    
-
-    
-
-
-
+    assign o_usher = r_usher;
+    assign o_address = r_address;
+    assign o_subaddress = r_subaddress;
+    assign o_data = r_data;
+    assign o_mode = r_mode;
 
 endmodule

@@ -37,7 +37,8 @@ module SCCB
     input  logic [7:0]  i_data,
     input  logic [1:0]  i_mode,
     
-    output logic o_busy,
+    output logic        o_busy,
+    output logic [7:0]  o_data,
     
      /*
       * Device interface
@@ -70,7 +71,6 @@ module SCCB
     logic [1:0]  r_mode;
     logic [2:0]  r_bit_index;
     logic [7:0]  r_rx_data;
-
     
 
     logic [3:0]  s_transmission_next;
@@ -334,6 +334,12 @@ module SCCB
                     end
 
             endcase
+
+            if(s_transmission != IDLE)
+                o_busy = 1'b1;
+            else
+                o_busy = 1'b0;
+
         end
     
     always@(posedge clk)
@@ -353,9 +359,10 @@ module SCCB
             r_sda_tx        <= r_sda_tx_next;
         end
     
-    assign io_sda = r_sda_en ? r_sda_tx : 1'bz;
-    assign  o_scl = r_scl;
-    assign  r_sda_rx = io_sda;
-    assign d_state = s_transmission;
+    assign io_sda   = r_sda_en ? r_sda_tx : 1'bz;
+    assign o_scl    = r_scl;
+    assign r_sda_rx = io_sda;
+    assign d_state  = s_transmission;
+    assign o_data   = r_rx_data;
 
 endmodule
