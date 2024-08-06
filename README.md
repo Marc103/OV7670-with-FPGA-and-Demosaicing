@@ -23,10 +23,10 @@ That would be the next (and final) checkpoint when time permits.
 
 As of now I'm going to call it day.
 
-almost forgot, to reproduce these results, you need to (manually) write these values to the registers:
-0x12 -> 0000 0101
-0x40 -> 1101 0000
-0x8c -> 0000 0010
+almost forgot, to reproduce these results, you need to (manually) write these values to the registers:  
+0x12 -> 0000 0101  
+0x40 -> 1101 0000  
+0x8c -> 0000 0010  
 
 and lastly if you want to try the pattern generator for testing:
 0x71 -> 1000 0101
