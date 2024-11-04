@@ -29,7 +29,6 @@ Okay, it turns out there is a ridiculous number of device control registers.
 - center button sends command
 
 Probably should add a way to read and display a value stored at a register.
-
 */
 
 module OV7670_CAMERA_DRIVER

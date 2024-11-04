@@ -29,37 +29,6 @@ module RAM_2Port #(parameter WIDTH = 16, DEPTH = 256)
   // Declare the Memory variable
   reg [WIDTH-1:0] r_Mem[DEPTH-1:0];
   
-  // debug 
-  
-  initial
-    begin
-        r_Mem[0] = 12'hff0;
-        r_Mem[0] = 12'hff0;
-        r_Mem[320] = 12'hff0;
-        r_Mem[321] = 12'hff0;
-        r_Mem[640] = 12'hff0;
-        r_Mem[641] = 12'hff0;
-        r_Mem[960] = 12'hff0;
-        r_Mem[961] = 12'hff0;
-        r_Mem[1280] = 12'hff0;
-        r_Mem[1281] = 12'hff0;
-        r_Mem[1600] = 12'hff0;
-        r_Mem[1601] = 12'hff0;
-        r_Mem[1920] = 12'hff0;
-        r_Mem[1921] = 12'hff0;
-        r_Mem[2240] = 12'hff0;
-        r_Mem[2241] = 12'hff0;
-        r_Mem[2560] = 12'hf00;
-        r_Mem[2561] = 12'hf00;
- 
-        
-        
-        
-        
-   
-    end
-  
-
   // Handle writes to memory
   always @ (posedge i_Wr_Clk)
   begin

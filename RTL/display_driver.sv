@@ -54,9 +54,6 @@
                            .o_Segment_E(CE),
                            .o_Segment_F(CF),
                            .o_Segment_G(CG));
-
-
-
     always_comb
         begin
             AN3 = 1'b1;
@@ -121,9 +118,4 @@
             state <= next_state;
 
         end
-
-
-
-
-
 endmodule

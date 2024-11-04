@@ -15,18 +15,22 @@ module TESTBENCH_FRAME ();
         clk = 0; 
         forever 
             begin
-                #10 clk = ~clk;
+                #1 clk = ~clk;
             end 
     end
     
     logic d_hsync;
     logic d_vsync;
-    logic [16:0] d_r_addr;
+    logic [$clog2(640 * 480):0] d_r_addr;
+    logic [$clog2(640):0] d_pixel_x;
+    logic [$clog2(480):0] d_pixel_y;
     
-    QVGA qvga_dut (.pclk(clk),
+    VGA_PARAM dut (.pclk(clk),
                    .hsync(d_hsync),
                    .vsync(d_vsync),
-                   .d_r_addr(d_r_addr));
+                   .r_addr(d_r_addr),
+                   .pixel_x(d_pixel_x),
+                   .pixel_y(d_pixel_y));
     
     initial begin
         // Write simulation code here 
@@ -34,8 +38,5 @@ module TESTBENCH_FRAME ();
         //$dumpvars();
 
         
-    end
-    
-
-    
+    end  
 endmodule

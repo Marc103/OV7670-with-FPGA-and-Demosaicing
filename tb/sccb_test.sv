@@ -63,7 +63,6 @@ module TESTBENCH_FRAME();
         w_usher = 1'b1;
         #10;
         w_usher = 1'b0;
-
     end
 
     
