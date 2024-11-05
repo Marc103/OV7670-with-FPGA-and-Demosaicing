@@ -28,7 +28,7 @@ module RAM_2Port #(parameter WIDTH = 16, DEPTH = 256)
 
   // Declare the Memory variable
   reg [WIDTH-1:0] r_Mem[DEPTH-1:0];
-  
+   
   // Handle writes to memory
   always @ (posedge i_Wr_Clk)
   begin

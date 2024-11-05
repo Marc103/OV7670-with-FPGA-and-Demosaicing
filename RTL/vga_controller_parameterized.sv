@@ -25,7 +25,7 @@ module VGA_PARAM
      /*
       * Video buffer ports
       */
-     input logic  [11:0] r_data,
+     input logic  [3:0]  r_data,
      input logic         r_dv,
      output logic        r_clk,
      output logic [$clog2(RESOLUTION_WIDTH * RESOLUTION_HEIGHT):0] r_addr,
@@ -44,12 +44,6 @@ module VGA_PARAM
      output logic        vsync
      
      );
-    
-
-    // rgb state
-    logic [3:0] r_red_bits;
-    logic [3:0] r_green_bits;
-    logic [3:0] r_blue_bits;
     
     // address state
     logic [$clog2(RESOLUTION_WIDTH * RESOLUTION_HEIGHT):0]  r_r_addr = 0;
@@ -137,12 +131,12 @@ module VGA_PARAM
             line <= line_next;
             col <= col_next;
             
-            // Grab data (doesn't actually matter if r_dv)
-            r_red_bits      <= r_data[11:8];
-            r_green_bits    <= r_data[7:4];
-            r_blue_bits     <= r_data[3:0];
         end
-        
+    
+    assign red_bits = r_data;
+    assign blue_bits = r_data;
+    assign green_bits = r_data;
+    
     assign r_addr = r_r_addr;
     assign r_clk = pclk;
     assign r_en = 1'b1;

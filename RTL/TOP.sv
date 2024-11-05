@@ -73,10 +73,6 @@ module TOP
     assign PWDN_PIN = 1'b0;
     assign RST_PIN = 1'b1;
     
-    
-
-    
-   
     /*
     logic clk = 0;
     initial 
@@ -84,12 +80,11 @@ module TOP
             clk = 0; 
             forever 
                begin
-                #10 clk = ~clk;
+                #1 clk = ~clk;
                 end 
          end
     */
-    
-    
+     
     
     /*
      * Clock wiring, to produce 25 MHz clock and 400 KHz (max 400Khz for i2c)
@@ -110,60 +105,38 @@ module TOP
      * RGB deserializer wiring (and VGA port wiring)
      * this will be changed to RGB565
      */
-    logic [15:0] w_rgb_444;
+    logic [7:0] w_raw_bayer;
+    logic [$clog2(640 * 480)-1:0]  w_Wr_Addr;
     
-    logic [$clog2(307200)-1:0] w_Wr_RGB_Addr;
-    logic [$clog2(640)-1:0]    w_cam_to_vbuff_pixel_x;
-    logic [$clog2(480)-1:0]    w_cam_to_vbuff_pixel_y;
-    logic [$clog2(76800)-1:0]  w_Wr_Addr;
-    logic                      w_Wr_DV;
-    
-    RGB_GENERIC Rgb_444 (.D(D_PIN),
+    RAW_BAYER raw_bayer (.D(D_PIN),
                          .HREF(HREF_PIN),
                          .VSYNC(VSYNC_PIN),
                          .PCLK(PCLK_PIN),
-                         .o_RGB_generic(w_rgb_444),
-                         .DV(w_Wr_DV),
-                         .w_addr(w_Wr_RGB_Addr),
-                         .pixel_x(w_cam_to_vbuff_pixel_x),
-                         .pixel_y(w_cam_to_vbuff_pixel_y));
-
-    
-    
-    RES_ADDR_TRANSFORM cam_to_vbuff (.in_pixel_x(w_cam_to_vbuff_pixel_x),
-                                     .in_pixel_y(w_cam_to_vbuff_pixel_y),
-                                     .out_addr(w_Wr_Addr));
-   
-   
-   
-   //assign w_Wr_Addr = w_Wr_RGB_Addr;
-   
-   // Incorrect transformation, leave for now
-   //assign w_Wr_Addr = w_Wr_RGB >> 2;
-   
-    
+                         .raw_bayer(w_raw_bayer),
+                         .dv(w_Wr_DV),
+                         .w_addr(w_Wr_Addr));
 
     /*
      * Video buffer (dual port ram)
      */
-    // QVGA (320 X 240) at 4 bits per pixel (RGB 444)
+    // VGA (640 X 480) at 4 bits per pixel (RGB 444)
     // 1899Kb of BRAM
-    // 320 x 240 = 76800
+    // 640 x 480 x 4 = 1228Kb 
 
     logic                      w_Wr_Clk;
-    logic [11:0]               w_Wr_Data;
+    logic [3:0]                w_Wr_Data;
 
-    logic                      w_Rd_Clk;
-    logic [$clog2(76800)-1:0]  w_Rd_Addr;
-    logic                      w_Rd_En;
-    logic                      w_Rd_DV;
-    logic [11:0]               w_Rd_Data;
+    logic                          w_Rd_Clk;
+    logic [$clog2(640 * 480)-1:0]  w_Rd_Addr;
+    logic                          w_Rd_En;
+    logic                          w_Rd_DV;
+    logic [3:0]                    w_Rd_Data;
     
-    assign w_Wr_Data = w_rgb_444[11:0];
-
+    assign w_Wr_Data = w_raw_bayer[7:4];
+    
     assign w_Wr_Clk = PCLK_PIN;
 
-    RAM_2Port #(.WIDTH(12), .DEPTH(76800)) Vbuff
+    RAM_2Port #(.WIDTH(4), .DEPTH(640*480)) Vbuff
                (.i_Wr_Clk(w_Wr_Clk),
                 .i_Wr_Addr(w_Wr_Addr),
                 .i_Wr_DV(w_Wr_DV),
@@ -175,24 +148,20 @@ module TOP
                 .o_Rd_DV(w_Rd_DV),
                 .o_Rd_Data(w_Rd_Data));
 
-
     /*
      * VGA controller wiring
      *
      */
-    // VGA (640 x 480) addresses will be translated
-    // to QVGA (320 x 240) address
 
-    logic [$clog2(307200)-1:0] w_Rd_Addr_VGA;
-    logic [$clog2(640)-1:0]    w_vga_to_vbuff_pixel_x;
-    logic [$clog2(480)-1:0]    w_vga_to_vbuff_pixel_y;
-    
+    logic [$clog2(640)-1:0]     w_vga_to_vbuff_pixel_x;
+    logic [$clog2(480)-1:0]     w_vga_to_vbuff_pixel_y;
+
     VGA_PARAM vga ( .pclk(w_clk_100MHz_to_25MHz),
                     .r_data(w_Rd_Data),
                     .r_dv(w_Rd_DV),
 
                     .r_clk(w_Rd_Clk), 
-                    .r_addr(w_Rd_Addr_VGA),
+                    .r_addr(w_Rd_Addr),
                     .r_en(w_Rd_En),
                     .pixel_x(w_vga_to_vbuff_pixel_x),
                     .pixel_y(w_vga_to_vbuff_pixel_y),
@@ -203,10 +172,6 @@ module TOP
                     
                     .hsync(VGA_HS_PIN),
                     .vsync(VGA_VS_PIN));
-                    
-    RES_ADDR_TRANSFORM vga_to_vbuff (.in_pixel_x(w_vga_to_vbuff_pixel_x),
-                                     .in_pixel_y(w_vga_to_vbuff_pixel_y),
-                                     .out_addr(w_Rd_Addr));
 
     /*
      * HCI wiring
@@ -274,7 +239,7 @@ module TOP
                               .i_busy(w_busy)
 
                               );
-                              
+                               
     assign LED[15:8] = w_subaddress;
     assign LED[7:0]  = w_data;
 

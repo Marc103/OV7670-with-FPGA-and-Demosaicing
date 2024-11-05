@@ -37,12 +37,8 @@ module TESTBENCH_FRAME
                      .HREF(w_href),
                      .VSYNC(w_vsync),
                      .PCLK(clk),
-                     .o_RGB_generic(w_rgb),
-                     .DV(w_DV),
-                     .w_addr(w_addr),
-                     .pixel_x(w_pixel_x),
-                     .pixel_y(w_pixel_y));
-    
-
+                     .raw_bayer(w_rgb),
+                     .dv(w_DV),
+                     .w_addr(w_addr));
     
 endmodule
