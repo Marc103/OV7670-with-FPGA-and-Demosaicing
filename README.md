@@ -19,6 +19,8 @@ Despite the fact that i used bilinear interpolation for the demosaicing process,
 
 So i decided to all add a average pixel filter (and also fixed an unclean signal):
 
+![IMG_5212](https://github.com/user-attachments/assets/147dcd6f-ab7b-40bb-b4d9-6c1feed9222a)
+
 ![IMG_5211](https://github.com/user-attachments/assets/a67d037d-c31f-43a9-901f-f518679b4915)
 
 ![IMG_5213](https://github.com/user-attachments/assets/7cdaa105-f66c-48db-8bdc-a9896a402be8)
