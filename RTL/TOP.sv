@@ -203,6 +203,24 @@ module TOP
         .FP_N(FP_N_IMAGE_OUT),
         .FP_S(FP_S_IMAGE_OUT)
     ) conv_net_blue_if_o(w_clk_100MHz_to_25MHz);
+    
+    pixel_data_interface #(
+        .FP_M(FP_M_IMAGE_OUT),
+        .FP_N(FP_N_IMAGE_OUT),
+        .FP_S(FP_S_IMAGE_OUT)
+    ) conv_net_red_smooth_if_o(w_clk_100MHz_to_25MHz);
+    
+    pixel_data_interface #(
+        .FP_M(FP_M_IMAGE_OUT),
+        .FP_N(FP_N_IMAGE_OUT),
+        .FP_S(FP_S_IMAGE_OUT)
+    ) conv_net_green_smooth_if_o(w_clk_100MHz_to_25MHz);
+    
+    pixel_data_interface #(
+        .FP_M(FP_M_IMAGE_OUT),
+        .FP_N(FP_N_IMAGE_OUT),
+        .FP_S(FP_S_IMAGE_OUT)
+    ) conv_net_blue_smooth_if_o(w_clk_100MHz_to_25MHz);
 
     ////////////////////////////////////////////////////////////////
     // vbuff reader
@@ -221,8 +239,8 @@ module TOP
         .valid_o(w_vbuff_valid),
         .pixel_o(w_vbuff_pixel),
 
-        .row_i(conv_net_red_if_o.row),
-        .col_i(conv_net_red_if_o.col)
+        .row_i(conv_net_red_smooth_if_o.row),
+        .col_i(conv_net_red_smooth_if_o.col)
     );
 
     ////////////////////////////////////////////////////////////////
@@ -235,9 +253,9 @@ module TOP
     assign c = conv_net_red_if_o.col[0];
     assign rst_n_i = 1;
 
-    logic [(KERNEL_BIT_DEPTH-1):0] kernel_coeffs_i [3][KERNEL_HEIGHT][KERNEL_WIDTH];
+    logic [(KERNEL_BIT_DEPTH-1):0] kernel_coeffs_i [4][KERNEL_HEIGHT][KERNEL_WIDTH];
     always_comb begin
-        for(int c = 0; c < 3; c+= 1) begin
+        for(int c = 0; c < 4; c+= 1) begin
             for(int y = 0; y < 3; y += 1) begin
                 for(int x = 0; x < 3; x += 1) begin
                     kernel_coeffs_i[c][y][x] = 0;
@@ -247,6 +265,7 @@ module TOP
         
         // decimal to binary mappings - uq1.8
         // 0    - 9'b0_0000_0000;
+        // 0.11 - 9'b0_0000_1110;
         // 0.2  - 9'b0_0011_0011;
         // 0.25 - 9'b0_0100_0000;
         // 0.5  - 9'b0_1000_0000;
@@ -401,7 +420,17 @@ module TOP
             kernel_coeffs_i[2][2][2] = 9'b0_0000_0000;
         end
         
-        
+        // pixel average kernel
+        kernel_coeffs_i[3][0][0] = 9'b0_0001_1100;
+        kernel_coeffs_i[3][0][1] = 9'b0_0001_1100;
+        kernel_coeffs_i[3][0][2] = 9'b0_0001_1100;
+        kernel_coeffs_i[3][1][0] = 9'b0_0001_1100;
+        kernel_coeffs_i[3][1][1] = 9'b0_0001_1100;
+        kernel_coeffs_i[3][1][2] = 9'b0_0001_1100;
+        kernel_coeffs_i[3][2][0] = 9'b0_0001_1100;
+        kernel_coeffs_i[3][2][1] = 9'b0_0001_1100;
+        kernel_coeffs_i[3][2][2] = 9'b0_0001_1100;
+
         // The problem is doing this all in one
         // conv_net will cause trailing decimal values to
         // 'bleed' into the lower bits. Hence a conv net
@@ -486,17 +515,91 @@ module TOP
         .kernel_status_o(kernel_status_o)
     );
     
+    
+    conv_net #(
+        // Kernel FP params
+        .FP_M_KERNEL(FP_M_KERNEL),
+        .FP_N_KERNEL(FP_N_KERNEL),
+        .FP_S_KERNEL(FP_S_KERNEL),
+
+        .WIDTH(IMAGE_WIDTH),
+        .HEIGHT(IMAGE_HEIGHT),
+
+        .K_WIDTH(KERNEL_WIDTH),
+        .K_HEIGHT(KERNEL_HEIGHT),
+
+        .CONSTANT(CONSTANT),
+        .CLKS_PER_PIXEL(CLKS_PER_PIXEL)
+    ) conv_net_red_smooth (
+        .in(conv_net_red_if_o),
+        .out(conv_net_red_smooth_if_o),
+
+        // external wires
+        .rst_n_i(rst_n_i),
+        .kernel_coeffs_i(kernel_coeffs_i[3]),
+        .kernel_status_o(kernel_status_o)
+    );
+    
+    conv_net #(
+        // Kernel FP params
+        .FP_M_KERNEL(FP_M_KERNEL),
+        .FP_N_KERNEL(FP_N_KERNEL),
+        .FP_S_KERNEL(FP_S_KERNEL),
+
+        .WIDTH(IMAGE_WIDTH),
+        .HEIGHT(IMAGE_HEIGHT),
+
+        .K_WIDTH(KERNEL_WIDTH),
+        .K_HEIGHT(KERNEL_HEIGHT),
+
+        .CONSTANT(CONSTANT),
+        .CLKS_PER_PIXEL(CLKS_PER_PIXEL)
+    ) conv_net_green_smooth (
+        .in(conv_net_green_if_o),
+        .out(conv_net_green_smooth_if_o),
+
+        // external wires
+        .rst_n_i(rst_n_i),
+        .kernel_coeffs_i(kernel_coeffs_i[3]),
+        .kernel_status_o(kernel_status_o)
+    );
+    
+    conv_net #(
+        // Kernel FP params
+        .FP_M_KERNEL(FP_M_KERNEL),
+        .FP_N_KERNEL(FP_N_KERNEL),
+        .FP_S_KERNEL(FP_S_KERNEL),
+
+        .WIDTH(IMAGE_WIDTH),
+        .HEIGHT(IMAGE_HEIGHT),
+
+        .K_WIDTH(KERNEL_WIDTH),
+        .K_HEIGHT(KERNEL_HEIGHT),
+
+        .CONSTANT(CONSTANT),
+        .CLKS_PER_PIXEL(CLKS_PER_PIXEL)
+    ) conv_net_blue_smooth (
+        .in(conv_net_blue_if_o),
+        .out(conv_net_blue_smooth_if_o),
+
+        // external wires
+        .rst_n_i(rst_n_i),
+        .kernel_coeffs_i(kernel_coeffs_i[3]),
+        .kernel_status_o(kernel_status_o)
+    );
+      
     /*
      * VGA controller wiring
      *
      */
-     logic [11:0] data;
-     assign data = {conv_net_red_if_o.pixel, conv_net_green_if_o.pixel, conv_net_blue_if_o.pixel};
+     
+    logic [11:0] data;
+    assign data = {conv_net_red_smooth_if_o.pixel, conv_net_green_smooth_if_o.pixel, conv_net_blue_smooth_if_o.pixel};
 
     VGA_PARAM vga_param (
         .pclk(w_clk_100MHz_to_25MHz),
         .r_data(data),
-        .r_dv(conv_net_red_if_o.valid),
+        .r_dv(conv_net_red_smooth_if_o.valid),
         .r_clk(),
         .r_addr(),
         .r_en(),

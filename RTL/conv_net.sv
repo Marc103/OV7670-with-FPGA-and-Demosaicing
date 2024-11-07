@@ -1,3 +1,7 @@
+/////////////////////////////////// Developed By //////////////////////////////////////////////////////////////////
+// Marcos Ferreira - while part of the BiV lab at Northwestern University (see https://www.alexander.vision/bivlab)
+// 11/07/2024
+
 /* Convolutional filter
  *
  * using parallel row buffering following 'Design for Embedded Image Processing on FPGAs' 
