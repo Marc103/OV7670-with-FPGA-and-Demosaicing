@@ -594,7 +594,9 @@ module TOP
      */
      
     logic [11:0] data;
-    assign data = {conv_net_red_smooth_if_o.pixel, conv_net_green_smooth_if_o.pixel, conv_net_blue_smooth_if_o.pixel};
+    always@(posedge w_clk_100MHz_to_25MHz) begin
+        data <= {conv_net_red_smooth_if_o.pixel, conv_net_green_smooth_if_o.pixel, conv_net_blue_smooth_if_o.pixel};
+    end
 
     VGA_PARAM vga_param (
         .pclk(w_clk_100MHz_to_25MHz),

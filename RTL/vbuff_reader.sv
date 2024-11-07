@@ -13,7 +13,7 @@
  module VBUFF_READER #(
     parameter WIDTH = 640,
     parameter HEIGHT = 480,
-    parameter PIPE_PIXEL_X = WIDTH - 2,
+    parameter PIPE_PIXEL_X = WIDTH - 1,
     parameter PIPE_PIXEL_Y = HEIGHT - 1
  ) (
     input pclk,
