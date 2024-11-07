@@ -3,7 +3,38 @@ This project is intended to exercise concepts relating to embedded digital image
 In particular, to become familiar with interfacing with the OV7670 using I2C, demosaicing bayer pattern, and with VGA output.
 was also to develop a concrete understanding of pipeling and parallelism. All diagrams are taken from the reading sources.
 
-## Updates
+## Final Updates
+I have successfully managed to demosaic the raw bayer data from the camera! This was done with convolution network
+hardware that I had designed while part of the BiV lab at Northwestern University (see https://www.alexander.vision/bivlab)
+The only setup required to get this running is 0x12 -> 0000 00001, which puts the OV7670 is raw bayer output mode.
+
+Despite the fact that i used bilinear interpolation for the demosaicing process, the image still looked grainy:
+
+![1_raw](https://github.com/user-attachments/assets/df82c96d-ac4e-4f57-8cdd-addcdf7e087b)  
+
+![3_raw](https://github.com/user-attachments/assets/ba067f5f-0dd9-43c6-9218-d9ef33cf8ecd)  
+
+*some reference here 
+![ref_2](https://github.com/user-attachments/assets/4fec36e5-446c-4c86-8aad-7eb98e29906e)
+
+So i decided to all add a average pixel filter (and also fixed an unclean signal):
+
+![IMG_5211](https://github.com/user-attachments/assets/a67d037d-c31f-43a9-901f-f518679b4915)
+
+![IMG_5213](https://github.com/user-attachments/assets/7cdaa105-f66c-48db-8bdc-a9896a402be8)
+
+*more reference  
+
+![IMG_5208](https://github.com/user-attachments/assets/4f98f786-b702-4f27-b658-b3fbc3a5c083)
+
+Also I'm going to throw in the schematic here (using Vivado). Btw, use Vivado 2023 not 2024, there's
+a known issue that stops the dp ram from being implemented correctly.
+![image](https://github.com/user-attachments/assets/0c154155-fa2e-48df-b7b6-1eb73444d310)
+
+
+I'm pretty happy with results and so I think it's safe to call this project completed.
+
+## Previous Updates
 Got the SCCB working and so was able to write to the registers on the camera. Right now it's manual,
 and the plan is to make an init module to write these values on power on.
 
