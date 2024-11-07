@@ -254,8 +254,8 @@ module TOP
         
         ////////////////////////////////////
         // red kernel
-        /*
-        if((r == 0) && (c == 0)) begin
+        
+        if((r == 1) && (c == 1)) begin
             kernel_coeffs_i[0][0][0] = 9'b0_0000_0000;
             kernel_coeffs_i[0][0][1] = 9'b0_0000_0000;
             kernel_coeffs_i[0][0][2] = 9'b0_0000_0000;
@@ -266,7 +266,7 @@ module TOP
             kernel_coeffs_i[0][2][1] = 9'b0_0000_0000;
             kernel_coeffs_i[0][2][2] = 9'b0_0000_0000;
         end
-        if((r == 0) && (c == 1)) begin
+        if((r == 1) && (c == 0)) begin
             kernel_coeffs_i[0][0][0] = 9'b0_0000_0000;
             kernel_coeffs_i[0][0][1] = 9'b0_0000_0000;
             kernel_coeffs_i[0][0][2] = 9'b0_0000_0000;
@@ -277,7 +277,7 @@ module TOP
             kernel_coeffs_i[0][2][1] = 9'b0_0000_0000;
             kernel_coeffs_i[0][2][2] = 9'b0_0000_0000;
         end
-        if((r == 1) && (c == 0)) begin
+        if((r == 0) && (c == 1)) begin
             kernel_coeffs_i[0][0][0] = 9'b0_0000_0000;
             kernel_coeffs_i[0][0][1] = 9'b0_1000_0000;
             kernel_coeffs_i[0][0][2] = 9'b0_0000_0000;
@@ -288,7 +288,7 @@ module TOP
             kernel_coeffs_i[0][2][1] = 9'b0_1000_0000;
             kernel_coeffs_i[0][2][2] = 9'b0_0000_0000;
         end
-        if((r == 1) && (c == 1)) begin
+        if((r == 0) && (c == 0)) begin
             kernel_coeffs_i[0][0][0] = 9'b0_0100_0000;
             kernel_coeffs_i[0][0][1] = 9'b0_0000_0000;
             kernel_coeffs_i[0][0][2] = 9'b0_0100_0000;
@@ -299,11 +299,11 @@ module TOP
             kernel_coeffs_i[0][2][1] = 9'b0_0000_0000;
             kernel_coeffs_i[0][2][2] = 9'b0_0100_0000;
         end
-        */
+        
         
         ////////////////////////////////////
         // green kernel
-        if((r == 0) && (c == 1)) begin
+        if((r == 1) && (c == 1)) begin
             kernel_coeffs_i[1][0][0] = 9'b0_0000_0000;
             kernel_coeffs_i[1][0][1] = 9'b0_0100_0000;
             kernel_coeffs_i[1][0][2] = 9'b0_0000_0000;
@@ -314,7 +314,7 @@ module TOP
             kernel_coeffs_i[1][2][1] = 9'b0_0100_0000;
             kernel_coeffs_i[1][2][2] = 9'b0_0000_0000;
         end
-        if((r == 0) && (c == 0)) begin
+        if((r == 1) && (c == 0)) begin
             kernel_coeffs_i[1][0][0] = 9'b0_0011_0011;
             kernel_coeffs_i[1][0][1] = 9'b0_0000_0000;
             kernel_coeffs_i[1][0][2] = 9'b0_0011_0011;
@@ -325,7 +325,7 @@ module TOP
             kernel_coeffs_i[1][2][1] = 9'b0_0000_0000;
             kernel_coeffs_i[1][2][2] = 9'b0_0011_0011;
         end 
-        if((r == 1) && (c == 1)) begin
+        if((r == 0) && (c == 1)) begin
             kernel_coeffs_i[1][0][0] = 9'b0_0011_0011;
             kernel_coeffs_i[1][0][1] = 9'b0_0000_0000;
             kernel_coeffs_i[1][0][2] = 9'b0_0011_0011;
@@ -336,7 +336,7 @@ module TOP
             kernel_coeffs_i[1][2][1] = 9'b0_0000_0000;
             kernel_coeffs_i[1][2][2] = 9'b0_0011_0011;
         end
-        if((r == 1) && (c == 0)) begin
+        if((r == 0) && (c == 0)) begin
             kernel_coeffs_i[1][0][0] = 9'b0_0000_0000;
             kernel_coeffs_i[1][0][1] = 9'b0_0100_0000;
             kernel_coeffs_i[1][0][2] = 9'b0_0000_0000;
@@ -354,9 +354,9 @@ module TOP
             end
         end
         kernel_coeffs_i[1][1][1] = 9'b1_0000_0000;
-        /*
+        
         // blue kernel
-        if((r == 0) && (c == 0)) begin
+        if((r == 1) && (c == 1)) begin
             kernel_coeffs_i[2][0][0] = 9'b0_0100_0000;
             kernel_coeffs_i[2][0][1] = 9'b0_0000_0000;
             kernel_coeffs_i[2][0][2] = 9'b0_0100_0000;
@@ -367,7 +367,7 @@ module TOP
             kernel_coeffs_i[2][2][1] = 9'b0_0000_0000;
             kernel_coeffs_i[2][2][2] = 9'b0_0100_0000;
         end
-        if((r == 0) && (c == 1)) begin
+        if((r == 1) && (c == 0)) begin
             kernel_coeffs_i[2][0][0] = 9'b0_0000_0000;
             kernel_coeffs_i[2][0][1] = 9'b0_1000_0000;
             kernel_coeffs_i[2][0][2] = 9'b0_0000_0000;
@@ -378,7 +378,7 @@ module TOP
             kernel_coeffs_i[2][2][1] = 9'b0_1000_0000;
             kernel_coeffs_i[2][2][2] = 9'b0_0000_0000;
         end
-        if((r == 1) && (c == 0)) begin
+        if((r == 0) && (c == 1)) begin
             kernel_coeffs_i[2][0][0] = 9'b0_0000_0000;
             kernel_coeffs_i[2][0][1] = 9'b0_0000_0000;
             kernel_coeffs_i[2][0][2] = 9'b0_0000_0000;
@@ -389,7 +389,7 @@ module TOP
             kernel_coeffs_i[2][2][1] = 9'b0_0000_0000;
             kernel_coeffs_i[2][2][2] = 9'b0_0000_0000;
         end
-        if((r == 1) && (c == 1)) begin
+        if((r == 0) && (c == 0)) begin
             kernel_coeffs_i[2][0][0] = 9'b0_0000_0000;
             kernel_coeffs_i[2][0][1] = 9'b0_0000_0000;
             kernel_coeffs_i[2][0][2] = 9'b0_0000_0000;
@@ -400,7 +400,7 @@ module TOP
             kernel_coeffs_i[2][2][1] = 9'b0_0000_0000;
             kernel_coeffs_i[2][2][2] = 9'b0_0000_0000;
         end
-        */
+        
         
         // The problem is doing this all in one
         // conv_net will cause trailing decimal values to
@@ -491,7 +491,7 @@ module TOP
      *
      */
      logic [11:0] data;
-     assign data = {conv_net_green_if_o.pixel, conv_net_green_if_o.pixel, conv_net_green_if_o.pixel};
+     assign data = {conv_net_red_if_o.pixel, conv_net_green_if_o.pixel, conv_net_blue_if_o.pixel};
 
     VGA_PARAM vga_param (
         .pclk(w_clk_100MHz_to_25MHz),
