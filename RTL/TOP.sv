@@ -4,7 +4,7 @@
  * the physical wire / pin
  *
  */
-
+`include "pixel_data_interface.svh"
 `timescale 1ns / 1ps 
 
 module TOP
@@ -69,7 +69,28 @@ module TOP
       output logic [15:0] LED
       
     );
+    localparam IMAGE_WIDTH = 640;
+    localparam IMAGE_HEIGHT = 480;
+    localparam KERNEL_WIDTH = 3;
+    localparam KERNEL_HEIGHT = 3;
+
+    // Fixed Point Arithmetic params
+    localparam FP_M_IMAGE = 4;
+    localparam FP_N_IMAGE = 0;
+    localparam FP_S_IMAGE = 0;
+
+    localparam FP_M_KERNEL = 1;
+    localparam FP_N_KERNEL = 8;
+    localparam FP_S_KERNEL = 0;
+    localparam KERNEL_BIT_DEPTH = FP_M_KERNEL + FP_N_KERNEL + FP_S_KERNEL;
+
+    localparam FP_M_IMAGE_OUT = 4;
+    localparam FP_N_IMAGE_OUT = 0;
+    localparam FP_S_IMAGE_OUT = 0;
     
+    localparam CONSTANT = 0;
+    localparam CLKS_PER_PIXEL = 1;
+        
     assign PWDN_PIN = 1'b0;
     assign RST_PIN = 1'b1;
     
@@ -82,7 +103,6 @@ module TOP
                begin
                 #1 clk = ~clk;
                 end 
-         end
     */
      
     
@@ -95,18 +115,16 @@ module TOP
 
     // 100MHz/25MHz = 4, so we use 4/2 = 2
     CLK_DIV #(.div_by_x2(2)) clk_x2_2 (.clk(clk), .o_clk(w_clk_100MHz_to_25MHz));
-    
-    // 100MHz/6.25Mhz = 16, so we use 16/2 = 8
-    CLK_DIV #(.div_by_x2(8)) clk_x2_8 (.clk(clk), .o_clk(w_clk_100MHz_to_6_25MHz));
-    
+      
     assign MCLK = w_clk_100MHz_to_25MHz;
    
     /*
      * RGB deserializer wiring (and VGA port wiring)
-     * this will be changed to RGB565
+     * 
      */
     logic [7:0] w_raw_bayer;
     logic [$clog2(640 * 480)-1:0]  w_Wr_Addr;
+    logic w_Wr_DV;
     
     RAW_BAYER raw_bayer (.D(D_PIN),
                          .HREF(HREF_PIN),
@@ -127,7 +145,7 @@ module TOP
     logic [3:0]                w_Wr_Data;
 
     logic                          w_Rd_Clk;
-    logic [$clog2(640 * 480)-1:0]  w_Rd_Addr;
+    logic [$clog2(IMAGE_WIDTH * IMAGE_HEIGHT)-1:0]  w_Rd_Addr;
     logic                          w_Rd_En;
     logic                          w_Rd_DV;
     logic [3:0]                    w_Rd_Data;
@@ -136,7 +154,7 @@ module TOP
     
     assign w_Wr_Clk = PCLK_PIN;
 
-    RAM_2Port #(.WIDTH(4), .DEPTH(640*480)) Vbuff
+    RAM_2Port #(.WIDTH(4), .DEPTH(IMAGE_WIDTH * IMAGE_HEIGHT)) Vbuff
                (.i_Wr_Clk(w_Wr_Clk),
                 .i_Wr_Addr(w_Wr_Addr),
                 .i_Wr_DV(w_Wr_DV),
@@ -147,31 +165,352 @@ module TOP
                 .i_Rd_En(w_Rd_En),
                 .o_Rd_DV(w_Rd_DV),
                 .o_Rd_Data(w_Rd_Data));
+    
+    assign w_Rd_Clk = w_clk_100MHz_to_25MHz;         
+    
+    
+    logic [$clog2(IMAGE_WIDTH * IMAGE_HEIGHT)-1:0] w_r_addr;
+    logic w_r_en;
+    logic w_sync_dv;
+    logic [15:0] w_vbuff_row;
+    logic [15:0] w_vbuff_col;
+    logic w_vbuff_valid;
+    logic [3:0] w_vbuff_pixel;
 
+    assign w_Rd_Addr = w_r_addr;
+    assign w_Rd_En = w_r_en;
+
+    pixel_data_interface #(
+        .FP_M(FP_M_IMAGE),
+        .FP_N(FP_N_IMAGE),
+        .FP_S(FP_S_IMAGE)
+    ) conv_net_if_i (w_clk_100MHz_to_25MHz);
+
+    pixel_data_interface #(
+        .FP_M(FP_M_IMAGE_OUT),
+        .FP_N(FP_N_IMAGE_OUT),
+        .FP_S(FP_S_IMAGE_OUT)
+    ) conv_net_red_if_o(w_clk_100MHz_to_25MHz);
+    
+    pixel_data_interface #(
+        .FP_M(FP_M_IMAGE_OUT),
+        .FP_N(FP_N_IMAGE_OUT),
+        .FP_S(FP_S_IMAGE_OUT)
+    ) conv_net_green_if_o(w_clk_100MHz_to_25MHz);
+    
+    pixel_data_interface #(
+        .FP_M(FP_M_IMAGE_OUT),
+        .FP_N(FP_N_IMAGE_OUT),
+        .FP_S(FP_S_IMAGE_OUT)
+    ) conv_net_blue_if_o(w_clk_100MHz_to_25MHz);
+
+    ////////////////////////////////////////////////////////////////
+    // vbuff reader
+    
+    VBUFF_READER vbuff_reader (
+        .pclk(w_clk_100MHz_to_25MHz),
+        
+        .data_i(w_Rd_Data),
+        .r_addr_o(w_r_addr),
+        .r_en_o(w_r_en),
+
+        .sync_dv_i(w_sync_dv),
+
+        .row_o(w_vbuff_row),
+        .col_o(w_vbuff_col),
+        .valid_o(w_vbuff_valid),
+        .pixel_o(w_vbuff_pixel),
+
+        .row_i(conv_net_red_if_o.row),
+        .col_i(conv_net_red_if_o.col)
+    );
+
+    ////////////////////////////////////////////////////////////////
+    // conv setup
+    logic kernel_status_o;
+    logic rst_n_i;
+    logic r;
+    logic c;
+    assign r = conv_net_red_if_o.row[0];
+    assign c = conv_net_red_if_o.col[0];
+    assign rst_n_i = 1;
+
+    logic [(KERNEL_BIT_DEPTH-1):0] kernel_coeffs_i [3][KERNEL_HEIGHT][KERNEL_WIDTH];
+    always_comb begin
+        for(int c = 0; c < 3; c+= 1) begin
+            for(int y = 0; y < 3; y += 1) begin
+                for(int x = 0; x < 3; x += 1) begin
+                    kernel_coeffs_i[c][y][x] = 0;
+                end
+            end
+        end
+        
+        // decimal to binary mappings - uq1.8
+        // 0    - 9'b0_0000_0000;
+        // 0.2  - 9'b0_0011_0011;
+        // 0.25 - 9'b0_0100_0000;
+        // 0.5  - 9'b0_1000_0000;
+        // 1    - 9'b1_0000_0000;
+        
+        ////////////////////////////////////
+        // red kernel
+        /*
+        if((r == 0) && (c == 0)) begin
+            kernel_coeffs_i[0][0][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][0][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][0][2] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][1][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][1][1] = 9'b1_0000_0000;
+            kernel_coeffs_i[0][1][2] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][2][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][2][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][2][2] = 9'b0_0000_0000;
+        end
+        if((r == 0) && (c == 1)) begin
+            kernel_coeffs_i[0][0][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][0][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][0][2] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][1][0] = 9'b0_1000_0000;
+            kernel_coeffs_i[0][1][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][1][2] = 9'b0_1000_0000;
+            kernel_coeffs_i[0][2][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][2][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][2][2] = 9'b0_0000_0000;
+        end
+        if((r == 1) && (c == 0)) begin
+            kernel_coeffs_i[0][0][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][0][1] = 9'b0_1000_0000;
+            kernel_coeffs_i[0][0][2] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][1][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][1][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][1][2] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][2][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][2][1] = 9'b0_1000_0000;
+            kernel_coeffs_i[0][2][2] = 9'b0_0000_0000;
+        end
+        if((r == 1) && (c == 1)) begin
+            kernel_coeffs_i[0][0][0] = 9'b0_0100_0000;
+            kernel_coeffs_i[0][0][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][0][2] = 9'b0_0100_0000;
+            kernel_coeffs_i[0][1][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][1][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][1][2] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][2][0] = 9'b0_0100_0000;
+            kernel_coeffs_i[0][2][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[0][2][2] = 9'b0_0100_0000;
+        end
+        */
+        
+        ////////////////////////////////////
+        // green kernel
+        if((r == 0) && (c == 1)) begin
+            kernel_coeffs_i[1][0][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[1][0][1] = 9'b0_0100_0000;
+            kernel_coeffs_i[1][0][2] = 9'b0_0000_0000;
+            kernel_coeffs_i[1][1][0] = 9'b0_0100_0000;
+            kernel_coeffs_i[1][1][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[1][1][2] = 9'b0_0100_0000;
+            kernel_coeffs_i[1][2][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[1][2][1] = 9'b0_0100_0000;
+            kernel_coeffs_i[1][2][2] = 9'b0_0000_0000;
+        end
+        if((r == 0) && (c == 0)) begin
+            kernel_coeffs_i[1][0][0] = 9'b0_0011_0011;
+            kernel_coeffs_i[1][0][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[1][0][2] = 9'b0_0011_0011;
+            kernel_coeffs_i[1][1][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[1][1][1] = 9'b0_0011_0011;
+            kernel_coeffs_i[1][1][2] = 9'b0_0000_0000;
+            kernel_coeffs_i[1][2][0] = 9'b0_0011_0011;
+            kernel_coeffs_i[1][2][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[1][2][2] = 9'b0_0011_0011;
+        end 
+        if((r == 1) && (c == 1)) begin
+            kernel_coeffs_i[1][0][0] = 9'b0_0011_0011;
+            kernel_coeffs_i[1][0][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[1][0][2] = 9'b0_0011_0011;
+            kernel_coeffs_i[1][1][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[1][1][1] = 9'b0_0011_0011;
+            kernel_coeffs_i[1][1][2] = 9'b0_0000_0000;
+            kernel_coeffs_i[1][2][0] = 9'b0_0011_0011;
+            kernel_coeffs_i[1][2][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[1][2][2] = 9'b0_0011_0011;
+        end
+        if((r == 1) && (c == 0)) begin
+            kernel_coeffs_i[1][0][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[1][0][1] = 9'b0_0100_0000;
+            kernel_coeffs_i[1][0][2] = 9'b0_0000_0000;
+            kernel_coeffs_i[1][1][0] = 9'b0_0100_0000;
+            kernel_coeffs_i[1][1][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[1][1][2] = 9'b0_0100_0000;
+            kernel_coeffs_i[1][2][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[1][2][1] = 9'b0_0100_0000;
+            kernel_coeffs_i[1][2][2] = 9'b0_0000_0000;
+        end
+        
+        for(int y = 0; y < 3; y += 1) begin
+            for(int x = 0; x < 3; x += 1) begin
+                    kernel_coeffs_i[1][y][x] = 0;
+            end
+        end
+        kernel_coeffs_i[1][1][1] = 9'b1_0000_0000;
+        /*
+        // blue kernel
+        if((r == 0) && (c == 0)) begin
+            kernel_coeffs_i[2][0][0] = 9'b0_0100_0000;
+            kernel_coeffs_i[2][0][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][0][2] = 9'b0_0100_0000;
+            kernel_coeffs_i[2][1][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][1][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][1][2] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][2][0] = 9'b0_0100_0000;
+            kernel_coeffs_i[2][2][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][2][2] = 9'b0_0100_0000;
+        end
+        if((r == 0) && (c == 1)) begin
+            kernel_coeffs_i[2][0][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][0][1] = 9'b0_1000_0000;
+            kernel_coeffs_i[2][0][2] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][1][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][1][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][1][2] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][2][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][2][1] = 9'b0_1000_0000;
+            kernel_coeffs_i[2][2][2] = 9'b0_0000_0000;
+        end
+        if((r == 1) && (c == 0)) begin
+            kernel_coeffs_i[2][0][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][0][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][0][2] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][1][0] = 9'b0_1000_0000;
+            kernel_coeffs_i[2][1][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][1][2] = 9'b0_1000_0000;
+            kernel_coeffs_i[2][2][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][2][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][2][2] = 9'b0_0000_0000;
+        end
+        if((r == 1) && (c == 1)) begin
+            kernel_coeffs_i[2][0][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][0][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][0][2] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][1][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][1][1] = 9'b1_0000_0000;
+            kernel_coeffs_i[2][1][2] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][2][0] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][2][1] = 9'b0_0000_0000;
+            kernel_coeffs_i[2][2][2] = 9'b0_0000_0000;
+        end
+        */
+        
+        // The problem is doing this all in one
+        // conv_net will cause trailing decimal values to
+        // 'bleed' into the lower bits. Hence a conv net
+        // per channel.
+        
+    end
+    
+    assign conv_net_if_i.row = w_vbuff_row;
+    assign conv_net_if_i.col = w_vbuff_col;
+    assign conv_net_if_i.valid = w_vbuff_valid;
+    assign conv_net_if_i.pixel = w_vbuff_pixel;
+    
+    conv_net #(
+        // Kernel FP params
+        .FP_M_KERNEL(FP_M_KERNEL),
+        .FP_N_KERNEL(FP_N_KERNEL),
+        .FP_S_KERNEL(FP_S_KERNEL),
+
+        .WIDTH(IMAGE_WIDTH),
+        .HEIGHT(IMAGE_HEIGHT),
+
+        .K_WIDTH(KERNEL_WIDTH),
+        .K_HEIGHT(KERNEL_HEIGHT),
+
+        .CONSTANT(CONSTANT),
+        .CLKS_PER_PIXEL(CLKS_PER_PIXEL)
+    ) conv_net_red (
+        .in(conv_net_if_i),
+        .out(conv_net_red_if_o),
+
+        // external wires
+        .rst_n_i(rst_n_i),
+        .kernel_coeffs_i(kernel_coeffs_i[0]),
+        .kernel_status_o(kernel_status_o)
+    );
+    
+    conv_net #(
+        // Kernel FP params
+        .FP_M_KERNEL(FP_M_KERNEL),
+        .FP_N_KERNEL(FP_N_KERNEL),
+        .FP_S_KERNEL(FP_S_KERNEL),
+
+        .WIDTH(IMAGE_WIDTH),
+        .HEIGHT(IMAGE_HEIGHT),
+
+        .K_WIDTH(KERNEL_WIDTH),
+        .K_HEIGHT(KERNEL_HEIGHT),
+
+        .CONSTANT(CONSTANT),
+        .CLKS_PER_PIXEL(CLKS_PER_PIXEL)
+    ) conv_net_green (
+        .in(conv_net_if_i),
+        .out(conv_net_green_if_o),
+
+        // external wires
+        .rst_n_i(rst_n_i),
+        .kernel_coeffs_i(kernel_coeffs_i[1]),
+        .kernel_status_o(kernel_status_o)
+    );
+    
+    conv_net #(
+        // Kernel FP params
+        .FP_M_KERNEL(FP_M_KERNEL),
+        .FP_N_KERNEL(FP_N_KERNEL),
+        .FP_S_KERNEL(FP_S_KERNEL),
+
+        .WIDTH(IMAGE_WIDTH),
+        .HEIGHT(IMAGE_HEIGHT),
+
+        .K_WIDTH(KERNEL_WIDTH),
+        .K_HEIGHT(KERNEL_HEIGHT),
+
+        .CONSTANT(CONSTANT),
+        .CLKS_PER_PIXEL(CLKS_PER_PIXEL)
+    ) conv_net_blue (
+        .in(conv_net_if_i),
+        .out(conv_net_blue_if_o),
+
+        // external wires
+        .rst_n_i(rst_n_i),
+        .kernel_coeffs_i(kernel_coeffs_i[2]),
+        .kernel_status_o(kernel_status_o)
+    );
+    
     /*
      * VGA controller wiring
      *
      */
+     logic [11:0] data;
+     assign data = {conv_net_green_if_o.pixel, conv_net_green_if_o.pixel, conv_net_green_if_o.pixel};
 
-    logic [$clog2(640)-1:0]     w_vga_to_vbuff_pixel_x;
-    logic [$clog2(480)-1:0]     w_vga_to_vbuff_pixel_y;
+    VGA_PARAM vga_param (
+        .pclk(w_clk_100MHz_to_25MHz),
+        .r_data(data),
+        .r_dv(conv_net_red_if_o.valid),
+        .r_clk(),
+        .r_addr(),
+        .r_en(),
+        .pixel_x(),
+        .pixel_y(),
+        .sync_dv_o(w_sync_dv),
 
-    VGA_PARAM vga ( .pclk(w_clk_100MHz_to_25MHz),
-                    .r_data(w_Rd_Data),
-                    .r_dv(w_Rd_DV),
+        .red_bits(VGA_R_PIN),
+        .green_bits(VGA_G_PIN),
+        .blue_bits(VGA_B_PIN),
+        .hsync(VGA_HS_PIN),
+        .vsync(VGA_VS_PIN)
+    );
 
-                    .r_clk(w_Rd_Clk), 
-                    .r_addr(w_Rd_Addr),
-                    .r_en(w_Rd_En),
-                    .pixel_x(w_vga_to_vbuff_pixel_x),
-                    .pixel_y(w_vga_to_vbuff_pixel_y),
-                    
-                    .red_bits(VGA_R_PIN),
-                    .green_bits(VGA_G_PIN),
-                    .blue_bits(VGA_B_PIN),
-                    
-                    .hsync(VGA_HS_PIN),
-                    .vsync(VGA_VS_PIN));
 
     /*
      * HCI wiring

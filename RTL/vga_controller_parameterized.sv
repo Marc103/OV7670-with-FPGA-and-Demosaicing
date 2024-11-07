@@ -25,13 +25,14 @@ module VGA_PARAM
      /*
       * Video buffer ports
       */
-     input logic  [3:0]  r_data,
+     input logic  [11:0]  r_data,
      input logic         r_dv,
      output logic        r_clk,
      output logic [$clog2(RESOLUTION_WIDTH * RESOLUTION_HEIGHT):0] r_addr,
      output logic        r_en,
      output logic [$clog2(RESOLUTION_WIDTH):0] pixel_x,
      output logic [$clog2(RESOLUTION_HEIGHT):0] pixel_y,
+     output logic sync_dv_o,
 
 
      /*
@@ -56,6 +57,8 @@ module VGA_PARAM
     logic r_vsync_next;
     logic r_hsync_next;
 
+    logic r_sync_dv;
+
     // Line and column state
     logic [15:0] col  = 0; 
     logic [15:0] line = 0; 
@@ -69,6 +72,7 @@ module VGA_PARAM
         r_vsync_next = 1;
         r_hsync_next = 1;
         r_r_addr_next = r_r_addr;
+        r_sync_dv = 0;
 
         // Counting logic
         if(col == (H_FP + H_SYNC + H_BP + RESOLUTION_WIDTH - 1)) begin
@@ -108,13 +112,15 @@ module VGA_PARAM
             end 
         end 
 
-        // Address logic
+        // Address logic and sync_dv
         if(line > (V_FP + V_SYNC + V_BP - 1)) begin
             if((col > (H_FP + H_SYNC + H_BP - 2)) && (col < (H_FP + H_SYNC + H_BP + RESOLUTION_WIDTH - 1))) begin
+                r_sync_dv = 1;
                 r_r_addr_next = r_r_addr + 1;
             end
         end else begin
             r_r_addr_next = 0;
+            r_sync_dv = 0;
         end
     end
  
@@ -133,9 +139,9 @@ module VGA_PARAM
             
         end
     
-    assign red_bits = r_data;
-    assign blue_bits = r_data;
-    assign green_bits = r_data;
+    assign red_bits = r_data[11:8];
+    assign green_bits = r_data[7:4];
+    assign blue_bits = r_data[3:0];
     
     assign r_addr = r_r_addr;
     assign r_clk = pclk;
@@ -146,6 +152,7 @@ module VGA_PARAM
 
     assign hsync = r_hsync;
     assign vsync = r_vsync;
+    assign sync_dv_o = r_sync_dv;
 
     
 
