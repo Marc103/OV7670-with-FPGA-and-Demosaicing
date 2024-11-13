@@ -18,7 +18,7 @@ module VGA_PARAM
       parameter H_BP   = 48,
       parameter V_FP   = 10,
       parameter V_SYNC = 2,
-      parameter V_BP   = 29)
+      parameter V_BP   = 33)
 
     (input logic         pclk,
 
@@ -28,10 +28,10 @@ module VGA_PARAM
      input logic  [11:0]  r_data,
      input logic         r_dv,
      output logic        r_clk,
-     output logic [$clog2(RESOLUTION_WIDTH * RESOLUTION_HEIGHT):0] r_addr,
+     output logic [$clog2(RESOLUTION_WIDTH * RESOLUTION_HEIGHT)-1:0] r_addr,
      output logic        r_en,
-     output logic [$clog2(RESOLUTION_WIDTH):0] pixel_x,
-     output logic [$clog2(RESOLUTION_HEIGHT):0] pixel_y,
+     output logic [$clog2(RESOLUTION_WIDTH)-1:0] pixel_x,
+     output logic [$clog2(RESOLUTION_HEIGHT)-1:0] pixel_y,
      output logic sync_dv_o,
 
 
@@ -65,6 +65,11 @@ module VGA_PARAM
 
     logic [15:0] col_next = 0; 
     logic [15:0] line_next = 0;
+    
+    // VERY IMPORTANT
+    // RGB signals must be black when outside
+    // the viewing rectangle
+    logic [11:0] r_r_data;
 
     always_comb begin
         line_next = line;
@@ -73,6 +78,7 @@ module VGA_PARAM
         r_hsync_next = 1;
         r_r_addr_next = r_r_addr;
         r_sync_dv = 0;
+        r_r_data = 0;
 
         // Counting logic
         if(col == (H_FP + H_SYNC + H_BP + RESOLUTION_WIDTH - 1)) begin
@@ -122,6 +128,13 @@ module VGA_PARAM
             r_r_addr_next = 0;
             r_sync_dv = 0;
         end
+        
+        // Data read in logic
+        if(line > (V_FP + V_SYNC + V_BP - 1)) begin
+            if(col > (H_FP + H_SYNC + H_BP - 1)) begin
+                r_r_data = r_data;
+            end
+        end
     end
  
 
@@ -139,9 +152,9 @@ module VGA_PARAM
             
         end
     
-    assign red_bits = r_data[11:8];
-    assign green_bits = r_data[7:4];
-    assign blue_bits = r_data[3:0];
+    assign red_bits = r_r_data[11:8];
+    assign green_bits = r_r_data[7:4];
+    assign blue_bits = r_r_data[3:0];
     
     assign r_addr = r_r_addr;
     assign r_clk = pclk;
